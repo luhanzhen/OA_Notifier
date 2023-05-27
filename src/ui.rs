@@ -1,6 +1,7 @@
 use std::cell::RefCell;
-use std::os::windows::process::CommandExt;
-use std::process::Command;
+// use std::os::windows::process::CommandExt;
+// use std::process::Command;
+use webbrowser;
 use fltk::{prelude::*, *};
 use fltk::app::redraw;
 use fltk::enums::{Event};
@@ -105,7 +106,8 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
             if app::event_clicks_num() == 1
             {
                 let ress = tr.callback_row();
-                Command::new("cmd.exe").creation_flags(0x08000000).arg("/c").arg("start").arg(&tt.cell_value(ress, 3)).status().expect("Command");
+                // Command::new("cmd.exe").creation_flags(0x08000000).arg("/c").arg("start").arg(&tt.cell_value(ress, 3)).status().expect("Command");
+                webbrowser::open(&tt.cell_value(ress, 3)).unwrap();
             }
             if app::event_clicks_num() == 0
             {

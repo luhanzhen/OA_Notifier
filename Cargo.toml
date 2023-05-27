@@ -17,7 +17,7 @@ reqwest = {version = "0.11.17", features = ["blocking"]}
 scraper = "0.12.0"
 timer = "0.2.0"
 chrono = "0.4.10"
-
+webbrowser = "0.8.9"
 #tokio = "0.3.7"
 #fltk-grid = "0.1"
 #spider = "1.29.0"
