@@ -1,0 +1,29 @@
+[package]
+name = "OANotifier"
+version = "1.1.0"
+edition = "2021"
+authors = ["镇路晗 <a@example.com>"]
+#description = "本软件用于自动提醒吉大OA更新内容。"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+#fltk = { version = "1.3.30", features = ["fltk-bundled"] }
+fltk = "1.3.34"
+fltk-sys = "1.3.34"
+fltk-table = "0.3.0"
+notify-rust = "4.8.0"
+reqwest = {version = "0.11.17", features = ["blocking"]}
+scraper = "0.12.0"
+timer = "0.2.0"
+chrono = "0.4.10"
+
+#tokio = "0.3.7"
+#fltk-grid = "0.1"
+#spider = "1.29.0"
+#rust-crypto = "0.2.36"
+#spider = "1.31.2"
+
+#soup = "0.5.1"
+
+
