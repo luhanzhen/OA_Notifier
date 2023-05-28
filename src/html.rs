@@ -18,7 +18,14 @@ fn get_info(url: &str, vec: &mut Box<Vec<Item>>)
 
     // let pre = String::from("https://oa.jlu.edu.cn/defaultroot/");
     let pre = "https://oa.jlu.edu.cn/defaultroot/";
-    let response = reqwest::blocking::get(url).unwrap().text().unwrap();
+    let response =  reqwest::blocking::get(url).unwrap().text().unwrap();
+    // {
+    //     Ok(str) => str,
+    //     Err(_err) => String::from(""),
+    // };
+    if response.is_empty() {
+        return;
+    }
     // let response= fs::read_to_string(".\\test.html").unwrap();
     let document = scraper::Html::parse_document(&response);
     let title_selector = scraper::Selector::parse(r#"DIV[class="li rel"]"#).unwrap();
@@ -52,6 +59,7 @@ pub fn get_html(vector: &mut RefCell<Vec<Item>>)
     let url1 = "https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage=1";
     let url2 = "https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage=2";
     let url3 = "https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage=3";
+
     let mut vec_1: Box<Vec<Item>> = Box::new(vec![]);
     let mut vec_2: Box<Vec<Item>> = Box::new(vec![]);
     let mut vec_3: Box<Vec<Item>> = Box::new(vec![]);
@@ -73,12 +81,19 @@ pub fn get_html(vector: &mut RefCell<Vec<Item>>)
         tx3.send(vec_3).unwrap();
     });
 
-    vec_1 = rx1.recv().unwrap();
-    vec_2 = rx2.recv().unwrap();
-    vec_3 = rx3.recv().unwrap();
+
     t1.join().unwrap();
     t2.join().unwrap();
     t3.join().unwrap();
+
+    vec_1 = rx1.recv().unwrap();
+    vec_2 = rx2.recv().unwrap();
+    vec_3 = rx3.recv().unwrap();
+
+    if vec_1.len() != 30 && vec_2.len() != 30 && vec_3.len() != 30
+    {
+        return;
+    }
 
     vector.borrow_mut().clear();
 

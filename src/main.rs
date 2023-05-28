@@ -7,6 +7,7 @@ use fltk::{prelude::*, *};
 use fltk::image::IcoImage;
 use fltk_table::{SmartTable, TableOpts};
 use notify_rust::Notification;
+
 extern crate timer;
 extern crate chrono;
 
@@ -32,6 +33,13 @@ fn main() {
     let mut vector: RefCell<Vec<Item>> = RefCell::new(vec![]);
 
     get_html(&mut vector);
+    if vector.borrow().is_empty() {
+        for _ in 0..90 {
+            let item = Item {title:  String::from("不能访问OA，网络不可用"), time: String::from("。"), source: String::from("。"),href: String::from("。"), is_top: false };
+            vector.borrow_mut().push(item);
+        }
+
+    }
 
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
 
@@ -65,6 +73,10 @@ fn main() {
             // println!("hello world");
             let mut now: RefCell<Vec<Item>> = RefCell::new(vec![]);
             get_html(&mut now);
+            if now.borrow().len() != table.rows() as usize
+            {
+                return;
+            }
             let changed = |table: &mut SmartTable, curr: &Ref<Vec<Item>>| -> bool {
                 if curr.is_empty() {
                     return false;
@@ -111,8 +123,7 @@ fn main() {
     }
 
     wind.set_callback(move |_| {
-        if app::event() == enums::Event::Close {
-        }
+        if app::event() == enums::Event::Close {}
     });
 
 
