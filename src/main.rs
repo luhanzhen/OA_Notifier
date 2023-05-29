@@ -65,7 +65,7 @@ fn main() {
     wind.end();
     wind.show();
 
-
+    drop(vector);
     let timer = timer::Timer::new();
     let _guard = {
         // let count = count.clone();
@@ -111,6 +111,7 @@ fn main() {
                 table.set_cell_value(i as i32, 3, &now.borrow()[i as usize].href);
             }
             table.redraw();
+            drop(now);
         })
     };
 

@@ -20,3 +20,8 @@
 *   个人用户享有使用权，作者不对使用者造成的后果负责。
 *   本软件仅供个人使用，不得随意传播，不可用于商业盈利目的或者非法目的。
 *   请主动遵守国家法律法规和学校的有关规定，非法或者违规行为造成的后果和法律责任自负。
+
+
+## Visitor count ⚡
+
+![](https://profile-counter.glitch.me/luhanzhen-OA_Notifier/count.svg)
