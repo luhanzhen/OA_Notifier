@@ -4,10 +4,13 @@ use std::cell::RefCell;
 use webbrowser;
 use fltk::{prelude::*, *};
 use fltk::app::redraw;
-use fltk::enums::{Event};
+use fltk::enums::{Event, FrameType};
+use fltk::frame::Frame;
+use fltk::image::PngImage;
 use fltk::menu::MenuBar;
 use fltk::window::DoubleWindow;
 use fltk_table::{SmartTable};
+use crate::html::get_content;
 use crate::item::Item;
 
 // use crate::item::VECTOR;
@@ -21,6 +24,46 @@ use crate::item::Item;
 
 pub const INIT_WIDTH: i32 = 1200;
 pub const INIT_HEIGHT: i32 = 600;
+
+
+fn show_content(url: &String, title: &String)
+{
+    let (content,imges) = get_content(url);
+
+    let mut buf = text::TextBuffer::default();
+    // buf.set_text("Hello world!");
+    // buf.append("\n");
+    // buf.append("This is a text editor!");
+    for e in content.iter()
+    {
+        buf.append(e);
+        buf.append("\n");
+        println!("{}",e);
+    }
+
+    let mut win = window::Window::default().with_size(INIT_WIDTH-200, INIT_HEIGHT+200).with_label(title);
+    let mut txt = text::TextDisplay::default().with_size(INIT_WIDTH-210, INIT_HEIGHT+190).center_of_parent();
+    txt.set_buffer(buf);
+    // 设置换行模式
+    // 不同于 AtPixel 和 AtColumn, AtBounds不需要第二个参数
+    // AtBounds 会设置文本到达输入框边界便会自动换行，对于大小可变的窗口很好用。
+    txt.wrap_mode(text::WrapMode::AtPixel, 0);
+    win.make_resizable(true);
+
+    for imgs in imges.iter()
+    {
+        let mut frame = Frame::default().with_size(INIT_WIDTH-210, INIT_HEIGHT+110).below_of(&txt,0);
+        frame.set_frame(FrameType::EngravedBox);
+
+        let bit_imges = reqwest::blocking::get(imgs).unwrap().bytes().unwrap().to_vec();
+        let mut image = PngImage::from_data(bit_imges.as_slice()).unwrap();
+        println!("{}-{}", image.width(), image.height());
+        image.scale(INIT_HEIGHT-220, INIT_HEIGHT-20, true, false);
+        frame.set_image(Some(image));
+    }
+    win.end();
+    win.show();
+}
 
 pub fn add_menu(wind: &mut DoubleWindow, menubar: &mut MenuBar, table: &mut SmartTable, vector: &RefCell<Vec<Item>>) {
     menubar.add_choice("关于  |查找  |退出  ");
@@ -108,6 +151,7 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
                 let ress = tr.callback_row();
                 // Command::new("cmd.exe").creation_flags(0x08000000).arg("/c").arg("start").arg(&tt.cell_value(ress, 3)).status().expect("Command");
                 webbrowser::open(&tt.cell_value(ress, 3)).unwrap();
+                show_content(&tt.cell_value(ress, 3),&tt.cell_value(ress, 0));
             }
             if app::event_clicks_num() == 0
             {
