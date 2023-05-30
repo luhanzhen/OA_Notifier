@@ -1,8 +1,6 @@
-use std::{fs, io, thread};
+use std::{thread};
 use std::cell::RefCell;
-use std::collections::VecDeque;
 use std::sync::{mpsc};
-use scraper::element_ref::Text;
 use crate::item::Item;
 
 
@@ -17,8 +15,7 @@ use crate::item::Item;
 
 pub fn get_content(url: &str) -> (Vec<String>, Vec<String>)
 {
-
-    let response =  reqwest::blocking::get(url).unwrap().text().unwrap();
+    let response = reqwest::blocking::get(url).unwrap().text().unwrap();
     // let response = fs::read_to_string("test.txt").unwrap();
     if response.is_empty() {
         return (vec![], vec![]);
@@ -51,7 +48,7 @@ pub fn get_content(url: &str) -> (Vec<String>, Vec<String>)
 
     for e in sub_document.select(&img_selector)
     {
-        let img = format!("{}{}", pre,  e.value().attr("src").unwrap());
+        let img = format!("{}{}", pre, e.value().attr("src").unwrap());
         println!("{}", img);
         imges.push(img);
     }
@@ -63,10 +60,10 @@ pub fn get_content(url: &str) -> (Vec<String>, Vec<String>)
             let mut text = e.as_text().unwrap().text.to_string();
             text = text.replace("\n", "");
             text = text.replace("\t", "");
-            if !text.is_empty() {
-                // println!("{:#}", text);
-                strings.push(text);
-            }
+            // if !text.is_empty() {
+            // println!("{:#}", text);
+            strings.push(text);
+            // }
         }
     }
 

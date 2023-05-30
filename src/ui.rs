@@ -4,9 +4,9 @@ use std::cell::RefCell;
 use webbrowser;
 use fltk::{prelude::*, *};
 use fltk::app::redraw;
-use fltk::enums::{Event, FrameType};
+use fltk::enums::{Color, Event, FrameType};
 use fltk::frame::Frame;
-use fltk::image::PngImage;
+use fltk::image::{JpegImage, PngImage};
 use fltk::menu::MenuBar;
 use fltk::window::DoubleWindow;
 use fltk_table::{SmartTable};
@@ -28,7 +28,7 @@ pub const INIT_HEIGHT: i32 = 600;
 
 fn show_content(url: &String, title: &String)
 {
-    let (content,imges) = get_content(url);
+    let (content, imges) = get_content(url);
 
     let mut buf = text::TextBuffer::default();
     // buf.set_text("Hello world!");
@@ -38,35 +38,73 @@ fn show_content(url: &String, title: &String)
     {
         buf.append(e);
         buf.append("\n");
-        println!("{}",e);
+        // println!("{}", e);
     }
 
-    let mut win = window::Window::default().with_size(INIT_WIDTH-200, INIT_HEIGHT+200).with_label(title);
-    let mut txt = text::TextDisplay::default().with_size(INIT_WIDTH-210, INIT_HEIGHT+190).center_of_parent();
+    let mut win = window::Window::default().with_size(900, 1200).with_label(title);
+    let mut txt = text::TextDisplay::default().with_size(900, 600).with_pos(0, 10);
+
     txt.set_buffer(buf);
+    txt.set_color(Color::from_rgb(246, 251, 255));
+    win.set_color(Color::from_rgb(246, 251, 255));
+
     // 设置换行模式
     // 不同于 AtPixel 和 AtColumn, AtBounds不需要第二个参数
     // AtBounds 会设置文本到达输入框边界便会自动换行，对于大小可变的窗口很好用。
-    txt.wrap_mode(text::WrapMode::AtPixel, 0);
+    txt.wrap_mode(text::WrapMode::AtBounds, 0);
     win.make_resizable(true);
-
-    for imgs in imges.iter()
-    {
-        let mut frame = Frame::default().with_size(INIT_WIDTH-210, INIT_HEIGHT+110).below_of(&txt,0);
+    // let mut but;
+    if !imges.is_empty() {
+        let mut frame = Frame::default().with_size(900, 600).below_of(&txt, 0);
         frame.set_frame(FrameType::EngravedBox);
+        frame.set_color(Color::from_rgb(246, 251, 255));
+        for imgs in imges.iter()
+        {
+            let bit_imges = reqwest::blocking::get(imgs).unwrap().bytes().unwrap().to_vec();
 
-        let bit_imges = reqwest::blocking::get(imgs).unwrap().bytes().unwrap().to_vec();
-        let mut image = PngImage::from_data(bit_imges.as_slice()).unwrap();
-        println!("{}-{}", image.width(), image.height());
-        image.scale(INIT_HEIGHT-220, INIT_HEIGHT-20, true, false);
-        frame.set_image(Some(image));
+            if imgs.contains("png") {
+                let mut image = PngImage::from_data(bit_imges.as_slice()).unwrap();
+                image.scale(900, 500, true, false);
+                frame.set_image(Some(image));
+            } else if imgs.contains("png") {
+                let mut image = JpegImage::from_data(bit_imges.as_slice()).unwrap();
+                image.scale(900, 500, true, false);
+                frame.set_image(Some(image));
+            } else {
+                // frame.set_image(None);
+            }
+
+
+
+
+
+            // txt.set_frame(FrameType::EngravedBox);
+            // txt.set_image(Some(image))
+        }
+        // but = Button::new(1100, 510, 100, 40, "在浏览器中打开").below_of(&frame, 0);
+    } else {
+        win.set_size(900, 610);
+        txt.set_size(900, 600);
     }
+
+    let uurl = url.clone();
+    // txt.set_callback(move |_| webbrowser::open(&uurl).unwrap());
+    txt.handle(move |_, event| match event {
+        Event::Released => {
+            if app::event_clicks_num() == 1 {
+                webbrowser::open(&uurl).unwrap()
+            }
+            true
+        }
+        _ => false,
+    });
+
     win.end();
     win.show();
 }
 
 pub fn add_menu(wind: &mut DoubleWindow, menubar: &mut MenuBar, table: &mut SmartTable, vector: &RefCell<Vec<Item>>) {
-    menubar.add_choice("关于  |查找  |退出  ");
+    menubar.add_choice("@fileopen |@search |@-> ");
     let windx = menubar.width() + wind.x_root();
     let windy = menubar.height() + wind.y_root();
     let vv = RefCell::clone(vector);
@@ -74,7 +112,7 @@ pub fn add_menu(wind: &mut DoubleWindow, menubar: &mut MenuBar, table: &mut Smar
     menubar.set_callback(move |c| {
         if let Some(choice) = c.choice() {
             match choice.as_str() {
-                "关于  " => {
+                "@fileopen " => {
                     dialog::message_title("OA About");
                     dialog::message(windx, windy, "使用本软件即同意以下内容:
                                     本软件用于自动提醒吉大OA更新内容。
@@ -87,29 +125,31 @@ pub fn add_menu(wind: &mut DoubleWindow, menubar: &mut MenuBar, table: &mut Smar
                                     本软件仅供个人使用，不得随意传播，不可用于商业盈利目的或者非法目的。
                                     请主动遵守国家法律法规和学校的有关规定，非法或者违规行为造成的后果和法律责任自负。");
                 }
-                "查找  " => {
+                "@search " => {
                     for i in 0..tt.rows()
                     {
                         tt.set_cell_value(i, 4, "");
                     }
 
                     let code = dialog::input_default("输入要查找的内容:", "").unwrap();
-                    // let code = String::from("吉林");
-                    println!("Finding...{}", code);
-                    tt.set_selection(-1, -1, -1, -1);
-                    for i in 0..vv.borrow().len()
-                    {
-                        let t = &vv.borrow()[i];
-                        if t.title.contains(&code) || t.source.contains(&code) || t.time.contains(&code)
+                    if !code.is_empty() {
+                        // let code = String::from("吉林");
+                        println!("Finding...{}", code);
+                        tt.set_selection(-1, -1, -1, -1);
+                        for i in 0..vv.borrow().len()
                         {
-                            println!("Found == {}", i);
-                            tt.set_cell_value(i as i32, 4, "f");
-                            tt.redraw();
+                            let t = &vv.borrow()[i];
+                            if t.title.contains(&code) || t.source.contains(&code) || t.time.contains(&code)
+                            {
+                                println!("Found == {}", i);
+                                tt.set_cell_value(i as i32, 4, "f");
+                                tt.redraw();
+                            }
                         }
                     }
                 }
-                "退出  " => {
-                    println!("Quitting");
+                "@-> " => {
+                    // println!("Quitting");
                     app::quit();
                 }
                 _ => unreachable!(),
@@ -150,8 +190,8 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
             {
                 let ress = tr.callback_row();
                 // Command::new("cmd.exe").creation_flags(0x08000000).arg("/c").arg("start").arg(&tt.cell_value(ress, 3)).status().expect("Command");
-                webbrowser::open(&tt.cell_value(ress, 3)).unwrap();
-                show_content(&tt.cell_value(ress, 3),&tt.cell_value(ress, 0));
+                // webbrowser::open(&tt.cell_value(ress, 3)).unwrap();
+                show_content(&tt.cell_value(ress, 3), &tt.cell_value(ress, 0));
             }
             if app::event_clicks_num() == 0
             {

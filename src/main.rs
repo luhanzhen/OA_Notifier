@@ -2,13 +2,12 @@
 
 use std::cell::{Ref, RefCell};
 use std::{fs};
-use std::io::Read;
 use std::path::Path;
 use fltk::{prelude::*, *};
-use fltk::image::{IcoImage, PngImage};
+use fltk::image::{IcoImage};
 use fltk_table::{SmartTable, TableOpts};
 use notify_rust::Notification;
-
+use fltk::{app, window::Window};
 extern crate timer;
 extern crate chrono;
 
@@ -28,8 +27,8 @@ use item::Item;
  * @time: 13:40
  * @this_file_name:main
  */
-use fltk::{prelude::*, *};
-use fltk::{app, enums::FrameType, frame::Frame, image::SvgImage, prelude::*, window::Window};
+
+
 
 // fn main() {
 //
@@ -73,7 +72,7 @@ fn main() {
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
 
 
-    let mut wind = window::Window::default().with_size(INIT_WIDTH, INIT_HEIGHT).with_label("OA Notifier");
+    let mut wind = Window::default().with_size(INIT_WIDTH, INIT_HEIGHT).with_label("OA Notifier");
 
     let mut menubar = menu::MenuBar::new(0, 0, INIT_WIDTH, 25, "");
     let mut table = SmartTable::default()
