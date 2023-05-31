@@ -37,7 +37,7 @@ fn show_content(url: &String, title: &String)
     for e in content.iter()
     {
         buf.append(e);
-        buf.append("\n");
+        // buf.append("\n");
         // println!("{}", e);
     }
 
@@ -66,20 +66,13 @@ fn show_content(url: &String, title: &String)
                 let mut image = PngImage::from_data(bit_imges.as_slice()).unwrap();
                 image.scale(900, 500, true, false);
                 frame.set_image(Some(image));
-            } else if imgs.contains("png") {
+            } else if imgs.contains("jpg") {
                 let mut image = JpegImage::from_data(bit_imges.as_slice()).unwrap();
                 image.scale(900, 500, true, false);
                 frame.set_image(Some(image));
             } else {
                 // frame.set_image(None);
             }
-
-
-
-
-
-            // txt.set_frame(FrameType::EngravedBox);
-            // txt.set_image(Some(image))
         }
         // but = Button::new(1100, 510, 100, 40, "在浏览器中打开").below_of(&frame, 0);
     } else {

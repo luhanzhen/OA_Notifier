@@ -25,7 +25,8 @@ pub fn get_content(url: &str) -> (Vec<String>, Vec<String>)
     let document = scraper::Html::parse_document(&response);
     let title_selector = scraper::Selector::parse(r#"div[class="content_t"]"#).unwrap();
 
-    let content_selector = scraper::Selector::parse(r#"div[class="content_font fontsize immmge"]"#).unwrap();
+    let content_selector1 = scraper::Selector::parse(r#"div[class="content_font fontsize immmge"]"#).unwrap();
+    let content_selector2 = scraper::Selector::parse(r#"div[class="content_font"]"#).unwrap();
 
     let img_selector = scraper::Selector::parse("img").unwrap();
     // let a_column_selector = scraper::Selector::parse("a.column").unwrap();
@@ -35,13 +36,19 @@ pub fn get_content(url: &str) -> (Vec<String>, Vec<String>)
 
     println!("{:#?}", element.inner_html());
 
-    let element = document.select(&content_selector).next().unwrap();
+    let element = match document.select(&content_selector1).next()
+    {
+        Some(ele) => ele,
+        None => document.select(&content_selector2).next().unwrap(),
+    };
+    // let element = document.select(&content_selector2).next().unwrap();
 
     let mut doc = element.inner_html();
     // println!("{}", doc);
     doc = doc.replace("<br>", "\n");
+    doc = doc.replace("</p>", "</p>\n");
     let s = String::from('\u{2002}');
-    doc = doc.replace(&s, "");
+    doc = doc.replace(&s, " ");
 
     let sub_document = scraper::Html::parse_document(&doc);
     let mut imges = vec![];
@@ -57,9 +64,12 @@ pub fn get_content(url: &str) -> (Vec<String>, Vec<String>)
     {
         if e.is_text()
         {
-            let mut text = e.as_text().unwrap().text.to_string();
-            text = text.replace("\n", "");
-            text = text.replace("\t", "");
+            let text = e.as_text().unwrap().text.to_string();
+            // let ele = e.as_element().unwrap();
+             // println!("{:#}:{}",e.as_element().unwrap(), text);
+
+            // text = text.replace("\n", "");
+            // text = text.replace("\t", "");
             // if !text.is_empty() {
             // println!("{:#}", text);
             strings.push(text);
