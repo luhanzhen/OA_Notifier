@@ -23,7 +23,7 @@ pub fn get_content(url: &str) -> (Vec<String>, Vec<String>)
     let pre = "https://oa.jlu.edu.cn/";
     // let response= fs::read_to_string(".\\test.html").unwrap();
     let document = scraper::Html::parse_document(&response);
-    let title_selector = scraper::Selector::parse(r#"div[class="content_t"]"#).unwrap();
+    // let title_selector = scraper::Selector::parse(r#"div[class="content_t"]"#).unwrap();
 
     let content_selector1 = scraper::Selector::parse(r#"div[class="content_font fontsize immmge"]"#).unwrap();
     let content_selector2 = scraper::Selector::parse(r#"div[class="content_font"]"#).unwrap();
@@ -32,9 +32,9 @@ pub fn get_content(url: &str) -> (Vec<String>, Vec<String>)
     // let a_column_selector = scraper::Selector::parse("a.column").unwrap();
     // let span_time_selector = scraper::Selector::parse("span.time").unwrap();
 
-    let element = document.select(&title_selector).next().unwrap();
+    // let element = document.select(&title_selector).next().unwrap();
 
-    println!("{:#?}", element.inner_html());
+    // println!("{:#?}", element.inner_html());
 
     let element = match document.select(&content_selector1).next()
     {
