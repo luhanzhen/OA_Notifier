@@ -110,7 +110,7 @@ pub fn add_menu(wind: &mut DoubleWindow, menubar: &mut MenuBar, table: &mut Smar
                     dialog::message(windx, windy, "使用本软件即同意以下内容:
                                     本软件用于自动提醒吉大OA更新内容。
                                     双击点开信息，支持搜索。
-                                    本软件当前版本号为1.1.0。
+                                    本软件当前版本号为1.2.0。
                                     本软件每隔十分钟爬取oa网站前三页的内容。
                                     本软件承诺保护用户隐私，不收集任何信息。
                                     本软件著作权及其解释权归作者镇路晗所有。
