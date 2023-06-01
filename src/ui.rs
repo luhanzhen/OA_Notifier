@@ -39,7 +39,22 @@ fn show_content(url: &String, title: &String, width: i32, height: i32)
     }
 
     let mut win = window::Window::default().with_size(width, height).with_label(title);
-    let mut txt = text::TextDisplay::default().with_size(win.width(), win.height() - 10).with_pos(0, 10);
+    let mut txt = text::TextDisplay::default().with_size(win.width(), win.height() - 50).with_pos(0, 10);
+
+
+    //为了下载附件，可能有多个附件
+    let mut btn = Frame::default().with_label("Click").below_of(&txt, 0).with_size(100, 30);
+    btn.set_color(Color::from_rgb(246, 251, 255));
+
+    btn.handle(move |tr, event| match event {
+        Event::Released => {
+            if app::event_clicks_num() == 0 {
+                println!("btn1 is checked");
+            }
+            true
+        }
+        _ => { false }
+    });
 
     txt.set_buffer(buf);
     txt.set_color(Color::from_rgb(246, 251, 255));
