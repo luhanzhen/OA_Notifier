@@ -1,17 +1,17 @@
 use std::cell::RefCell;
 // use std::os::windows::process::CommandExt;
 // use std::process::Command;
-use webbrowser;
-use fltk::{prelude::*, *};
+use crate::html::get_content;
+use crate::item::Item;
 use fltk::app::redraw;
 use fltk::enums::{Color, Event, FrameType};
 use fltk::frame::Frame;
 use fltk::image::{JpegImage, PngImage};
 use fltk::menu::MenuBar;
 use fltk::window::DoubleWindow;
-use fltk_table::{SmartTable};
-use crate::html::get_content;
-use crate::item::Item;
+use fltk::{prelude::*, *};
+use fltk_table::SmartTable;
+use webbrowser;
 
 // use crate::item::VECTOR;
 /**
@@ -22,28 +22,31 @@ use crate::item::Item;
  * @this_file_name:ui
  */
 
-
-fn show_content(url: &String, title: &String, width: i32, height: i32)
-{
+fn show_content(url: &String, title: &String, width: i32, height: i32) {
     let (content, imges) = get_content(url);
 
     let mut buf = text::TextBuffer::default();
     // buf.set_text("Hello world!");
     // buf.append("\n");
     // buf.append("This is a text editor!");
-    for e in content.iter()
-    {
+    for e in content.iter() {
         buf.append(e);
         // buf.append("\n");
         // println!("{}", e);
     }
 
-    let mut win = window::Window::default().with_size(width, height).with_label(title);
-    let mut txt = text::TextDisplay::default().with_size(win.width(), win.height() - 50).with_pos(0, 10);
-
+    let mut win = window::Window::default()
+        .with_size(width, height)
+        .with_label(title);
+    let mut txt = text::TextDisplay::default()
+        .with_size(win.width(), win.height() - 50)
+        .with_pos(0, 10);
 
     //为了下载附件，可能有多个附件
-    let mut btn = Frame::default().with_label("Click").below_of(&txt, 0).with_size(100, 30);
+    let mut btn = Frame::default()
+        .with_label("Click")
+        .below_of(&txt, 0)
+        .with_size(100, 30);
     btn.set_color(Color::from_rgb(246, 251, 255));
 
     btn.handle(move |tr, event| match event {
@@ -53,7 +56,7 @@ fn show_content(url: &String, title: &String, width: i32, height: i32)
             }
             true
         }
-        _ => { false }
+        _ => false,
     });
 
     txt.set_buffer(buf);
@@ -69,12 +72,20 @@ fn show_content(url: &String, title: &String, width: i32, height: i32)
     win.show();
     let mut vector_win_tmp = vec![];
     if !imges.is_empty() {
-        for (i_size, imgs) in imges.iter().enumerate()
-        {
-            let bit_imges = reqwest::blocking::get(imgs).unwrap().bytes().unwrap().to_vec();
+        for (i_size, imgs) in imges.iter().enumerate() {
+            let bit_imges = reqwest::blocking::get(imgs)
+                .unwrap()
+                .bytes()
+                .unwrap()
+                .to_vec();
             let images_exist;
             let title_tmp = format!("{}-img[{}]", title, i_size + 1);
-            let mut win_tmp = window::Window::default().with_size((width as f32 * 0.618) as i32, (height as f32 * 0.618) as i32).with_label(title_tmp.as_str());
+            let mut win_tmp = window::Window::default()
+                .with_size(
+                    (width as f32 * 0.618) as i32,
+                    (height as f32 * 0.618) as i32,
+                )
+                .with_label(title_tmp.as_str());
 
             let mut frame = Frame::default().with_pos(0, 0);
             frame.set_frame(FrameType::EngravedBox);
@@ -89,8 +100,7 @@ fn show_content(url: &String, title: &String, width: i32, height: i32)
                 let scala = image.width() as f32 / image.height() as f32;
                 let w;
                 let h;
-                if win_tmp.width() < win_tmp.height()
-                {
+                if win_tmp.width() < win_tmp.height() {
                     h = win_tmp.height();
                     w = (h as f32 * scala) as i32;
                 } else {
@@ -113,8 +123,7 @@ fn show_content(url: &String, title: &String, width: i32, height: i32)
                 let scala = image.width() as f32 / image.height() as f32;
                 let w;
                 let h;
-                if win_tmp.width() < win_tmp.height()
-                {
+                if win_tmp.width() < win_tmp.height() {
                     h = win_tmp.height();
                     w = (h as f32 * scala) as i32;
                 } else {
@@ -145,29 +154,23 @@ fn show_content(url: &String, title: &String, width: i32, height: i32)
     }
 
     // 确保关闭窗口可以让图片窗口跟着关闭
-    win.handle(move |_win, event|
-        match event {
-            Event::Hide =>
-                {
-                    println!("Hide Hide!!!!!");
-                    for w in &mut vector_win_tmp
-                    {
-                        w.hide();
-                    }
-                    true
-                }
-            Event::Show =>
-                {
-                    println!("Show Show!!!!!");
-                    for w in &mut vector_win_tmp
-                    {
-                        w.show();
-                    }
-                    true
-                }
-            _ => false,
-        });
-
+    win.handle(move |_win, event| match event {
+        Event::Hide => {
+            println!("Hide Hide!!!!!");
+            for w in &mut vector_win_tmp {
+                w.hide();
+            }
+            true
+        }
+        Event::Show => {
+            println!("Show Show!!!!!");
+            for w in &mut vector_win_tmp {
+                w.show();
+            }
+            true
+        }
+        _ => false,
+    });
 
     //确保双击文字可以用浏览器打开网页
     let uurl = url.clone();
@@ -182,7 +185,12 @@ fn show_content(url: &String, title: &String, width: i32, height: i32)
     });
 }
 
-pub fn add_menu(wind: &mut DoubleWindow, menubar: &mut MenuBar, table: &mut SmartTable, vector: &RefCell<Vec<Item>>) {
+pub fn add_menu(
+    wind: &mut DoubleWindow,
+    menubar: &mut MenuBar,
+    table: &mut SmartTable,
+    vector: &RefCell<Vec<Item>>,
+) {
     menubar.add_choice("@fileopen |@search |@-> ");
     let windx = menubar.width() + wind.x_root();
     let windy = menubar.height() + wind.y_root();
@@ -237,13 +245,11 @@ pub fn add_menu(wind: &mut DoubleWindow, menubar: &mut MenuBar, table: &mut Smar
     });
 }
 
-pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut RefCell<Vec<Item>>)
-{
+pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut RefCell<Vec<Item>>) {
     table.set_row_resize(true);
     table.set_col_resize(true);
     table.set_col_header(true);
     table.set_row_header(false);
-
 
     table.set_col_width(0, (table.width() as f32 * 0.67) as i32);
     table.set_col_width(1, (table.width() as f32 * 0.18) as i32);
@@ -252,7 +258,6 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
     table.set_col_width(4, 0);
 
     table.set_col_header_height((table.height() as f32 * 0.045) as i32);
-
 
     wind.make_resizable(true);
 
@@ -265,18 +270,20 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
     let mut tt = table.clone();
     table.handle(move |tr, event| match event {
         Event::Released => {
-            if app::event_clicks_num() == 1
-            {
+            if app::event_clicks_num() == 1 {
                 let ress = tr.callback_row();
                 // Command::new("cmd.exe").creation_flags(0x08000000).arg("/c").arg("start").arg(&tt.cell_value(ress, 3)).status().expect("Command");
                 // webbrowser::open(&tt.cell_value(ress, 3)).unwrap();
                 let str = format!("{}：{}", tt.cell_value(ress, 0), tt.cell_value(ress, 1));
-                show_content(&tt.cell_value(ress, 3), &str, (tr.width() as f32 * 0.618) as i32, (tr.height() as f32 * 0.618) as i32);
+                show_content(
+                    &tt.cell_value(ress, 3),
+                    &str,
+                    (tr.width() as f32 * 0.618) as i32,
+                    (tr.height() as f32 * 0.618) as i32,
+                );
             }
-            if app::event_clicks_num() == 0
-            {
-                for i in 0..tt.rows()
-                {
+            if app::event_clicks_num() == 0 {
+                for i in 0..tt.rows() {
                     tt.set_cell_value(i, 4, "");
                 }
                 redraw();
@@ -287,10 +294,13 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
         _ => false,
     });
 
-    for i in 0..vector.borrow().len()
-    {
+    for i in 0..vector.borrow().len() {
         if vector.borrow()[i as usize].is_top {
-            table.set_cell_value(i as i32, 0, &format!("[置顶]{}", &vector.borrow()[i as usize].title));
+            table.set_cell_value(
+                i as i32,
+                0,
+                &format!("[置顶]{}", &vector.borrow()[i as usize].title),
+            );
         } else {
             table.set_cell_value(i as i32, 0, &vector.borrow()[i as usize].title);
         }
@@ -300,20 +310,27 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
     }
     let mut tt = table.clone();
 
-    table.draw_cell(move |t, ctx, row, col, x, y, w, h|
-        match ctx {
-            table::TableContext::ColHeader => {
-                if col < 3
-                {
-                    draw_header(tt.col_header_value(col).as_str(), x, y, w, h);
-                }
-            }// Column titles
-            table::TableContext::Cell => {
-                draw_data(tt.cell_value(row, col).as_str(), x, y, w, h, t.is_selected(row, col), tt.cell_value(row, 0).contains("置顶"), tt.cell_value(row, 4).contains("f"));
+    table.draw_cell(move |t, ctx, row, col, x, y, w, h| match ctx {
+        table::TableContext::ColHeader => {
+            if col < 3 {
+                draw_header(tt.col_header_value(col).as_str(), x, y, w, h);
             }
-            // Data in cells
-            _ => (),
-        });
+        } // Column titles
+        table::TableContext::Cell => {
+            draw_data(
+                tt.cell_value(row, col).as_str(),
+                x,
+                y,
+                w,
+                h,
+                t.is_selected(row, col),
+                tt.cell_value(row, 0).contains("置顶"),
+                tt.cell_value(row, 4).contains("f"),
+            );
+        }
+        // Data in cells
+        _ => (),
+    });
 
     let mut tt = table.clone();
     wind.draw(move |_| {
@@ -329,18 +346,24 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
 //
 pub fn draw_header(txt: &str, x: i32, y: i32, w: i32, h: i32) {
     draw::push_clip(x, y, w, h);
-    draw::draw_box(
-        FrameType::ThinUpBox, x, y, w, h, Color::FrameDefault,
-    );
+    draw::draw_box(FrameType::ThinUpBox, x, y, w, h, Color::FrameDefault);
     draw::set_draw_color(Color::Black);
     draw::set_font(enums::Font::TimesBold, 16);
     draw::draw_text2(txt, x, y, w, h, enums::Align::Center);
     draw::pop_clip();
 }
 
-
 // The selected flag sets the color of the cell to a grayish color, otherwise white
-pub fn draw_data(txt: &str, x: i32, y: i32, w: i32, h: i32, selected: bool, is_top: bool, is_found: bool) {
+pub fn draw_data(
+    txt: &str,
+    x: i32,
+    y: i32,
+    w: i32,
+    h: i32,
+    selected: bool,
+    is_top: bool,
+    is_found: bool,
+) {
     draw::push_clip(x, y, w, h);
     if selected || is_found {
         draw::set_draw_color(Color::from_u32(0x00D3_D3D3));

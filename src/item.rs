@@ -6,7 +6,7 @@
  * @this_file_name:Item
  */
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct Item {
     pub title: String,
     pub time: String,
@@ -35,4 +35,3 @@ pub struct Item {
 //         self.href = href.clone();
 //     }
 // }
-

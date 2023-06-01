@@ -1,26 +1,25 @@
 #![windows_subsystem = "windows"]
 
-use std::cell::{Ref, RefCell};
-use std::{fs};
-use std::path::Path;
+use fltk::app::Screen;
+use fltk::image::IcoImage;
+use fltk::{app, window::Window};
 use fltk::{prelude::*, *};
-use fltk::image::{IcoImage};
 use fltk_table::{SmartTable, TableOpts};
 use notify_rust::Notification;
-use fltk::{app, window::Window};
-use fltk::app::Screen;
+use std::cell::{Ref, RefCell};
+use std::fs;
+use std::path::Path;
 
-extern crate timer;
 extern crate chrono;
+extern crate timer;
 
-pub mod ui;
 pub mod html;
 pub mod item;
+pub mod ui;
 
-use ui::*;
 use html::*;
 use item::Item;
-
+use ui::*;
 
 /**
  * @project_name: OANotifier
@@ -31,39 +30,12 @@ use item::Item;
  */
 
 
-// fn main() {
-//
-//
-//
-//
-//     // let app = app::App::default();
-//     // let mut win = window::Window::default().with_size(900, 300);
-//     // win.make_resizable(true);
-//     // let mut b = browser::MultiBrowser::new(10, 10, 900 - 20, 300 - 20, "");
-//     // let widths = &[50, 50, 50, 70, 70, 40, 40, 70, 70, 50];
-//     // b.set_column_widths(widths);
-//     // b.set_column_char('\t');
-//     // // 现在在我们的`add()`方法中可以使用'\t'来制表符
-//     // b.add("USER\tPID\t%CPU\t%MEM\tVSZ\tRSS\tTTY\tSTAT\tSTART\tTIME\tCOMMAND");
-//     // b.add("root\t2888\t0.0\t0.0\t1352\t0\ttty3\tSW\tAug15\t0:00\t@b@f/sbin/mingetty tty3");
-//     // b.add("erco\t2889\t0.0\t13.0\t221352\t0\ttty3\tR\tAug15\t1:34\t@b@f/usr/local/bin/render a35 0004");
-//     // b.add("uucp\t2892\t0.0\t0.0\t1352\t0\tttyS0\tSW\tAug15\t0:00\t@b@f/sbin/agetty -h 19200 ttyS0 vt100");
-//     // b.add("root\t13115\t0.0\t0.0\t1352\t0\ttty2\tSW\tAug30\t0:00\t@b@f/sbin/mingetty tty2");
-//     // b.add(
-//     //     "root\t13464\t0.0\t0.0\t1352\t0\ttty1\tSW\tAug30\t0:00\t@b@f/sbin/mingetty tty1 --noclear",
-//     // );
-//     // win.end();
-//     // win.show();
-//     // app.run().unwrap();
-// }
-
-
 fn main() {
     let screens = Screen::all_screens();
     // println!("{} - {}", screens[0].w(), screens[0].h());
     // println!("{} - {}", screens[1].w(), screens[1].h());
 
-    let init_width: i32 = (screens[0].w()as f32 * 0.618 ) as i32;
+    let init_width: i32 = (screens[0].w() as f32 * 0.618) as i32;
     let init_height: i32 = (screens[0].h() as f32 * 0.618) as i32;
 
     let mut vector: RefCell<Vec<Item>> = RefCell::new(vec![]);
@@ -71,15 +43,22 @@ fn main() {
     get_html(&mut vector);
     if vector.borrow().is_empty() {
         for _ in 0..90 {
-            let item = Item { title: String::from("不能访问OA，网络不可用"), time: String::from("。"), source: String::from("。"), href: String::from("。"), is_top: false };
+            let item = Item {
+                title: String::from("不能访问OA，网络不可用"),
+                time: String::from("。"),
+                source: String::from("。"),
+                href: String::from("。"),
+                is_top: false,
+            };
             vector.borrow_mut().push(item);
         }
     }
 
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
 
-
-    let mut wind = Window::default().with_size(init_width, init_height).with_label("OA Notifier");
+    let mut wind = Window::default()
+        .with_size(init_width, init_height)
+        .with_label("OA Notifier");
 
     let mut menubar = menu::MenuBar::new(0, 0, init_width, 25, "");
     let mut table = SmartTable::default()
@@ -91,7 +70,6 @@ fn main() {
             editable: true,
             ..Default::default()
         });
-
 
     add_menu(&mut wind, &mut menubar, &mut table, &vector);
 
@@ -108,8 +86,7 @@ fn main() {
             // println!("hello world");
             let mut now: RefCell<Vec<Item>> = RefCell::new(vec![]);
             get_html(&mut now);
-            if now.borrow().len() != table.rows() as usize
-            {
+            if now.borrow().len() != table.rows() as usize {
                 return;
             }
             let changed = |table: &mut SmartTable, curr: &Ref<Vec<Item>>| -> String {
@@ -131,16 +108,22 @@ fn main() {
             if !title.is_empty() {
                 // println!("改变了");
 
-                Notification::new().appname("OA Notifier").subtitle("OA 更新")
+                Notification::new()
+                    .appname("OA Notifier")
+                    .subtitle("OA 更新")
                     .body(title.as_str())
                     .icon("firefox")
-                    .show().unwrap();
+                    .show()
+                    .unwrap();
             }
-            for i in 0..now.borrow().len()
-            {
+            for i in 0..now.borrow().len() {
                 if now.borrow()[i as usize].is_top {
                     table.set_label_font(enums::Font::Helvetica);
-                    table.set_cell_value(i as i32, 0, &format!("[置顶]{}", &now.borrow()[i as usize].title));
+                    table.set_cell_value(
+                        i as i32,
+                        0,
+                        &format!("[置顶]{}", &now.borrow()[i as usize].title),
+                    );
                 } else {
                     table.set_label_font(enums::Font::Times);
                     table.set_cell_value(i as i32, 0, &now.borrow()[i as usize].title);
@@ -156,16 +139,12 @@ fn main() {
 
     println!("This code has been executed after 3 seconds");
 
-
     if fs::metadata("./icon.ico").is_ok() {
         let icon: IcoImage = IcoImage::load(&Path::new("icon.ico")).unwrap();
         wind.set_icon(Some(icon));
     }
 
-    wind.set_callback(move |_| {
-        if app::event() == enums::Event::Close {}
-    });
-
+    wind.set_callback(move |_| if app::event() == enums::Event::Close {});
 
     app.run().unwrap();
     drop(_guard);
