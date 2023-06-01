@@ -8,6 +8,8 @@ use fltk::image::{IcoImage};
 use fltk_table::{SmartTable, TableOpts};
 use notify_rust::Notification;
 use fltk::{app, window::Window};
+use fltk::app::Screen;
+
 extern crate timer;
 extern crate chrono;
 
@@ -27,7 +29,6 @@ use item::Item;
  * @time: 13:40
  * @this_file_name:main
  */
-
 
 
 // fn main() {
@@ -58,6 +59,12 @@ use item::Item;
 
 
 fn main() {
+    let screens = Screen::all_screens();
+    // println!("{} - {}", screens[0].w(), screens[0].h());
+    // println!("{} - {}", screens[1].w(), screens[1].h());
+
+    let init_width: i32 = (screens[0].w()as f32 * 0.618 ) as i32;
+    let init_height: i32 = (screens[0].h() as f32 * 0.618) as i32;
 
     let mut vector: RefCell<Vec<Item>> = RefCell::new(vec![]);
 
@@ -72,9 +79,9 @@ fn main() {
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
 
 
-    let mut wind = Window::default().with_size(INIT_WIDTH, INIT_HEIGHT).with_label("OA Notifier");
+    let mut wind = Window::default().with_size(init_width, init_height).with_label("OA Notifier");
 
-    let mut menubar = menu::MenuBar::new(0, 0, INIT_WIDTH, 25, "");
+    let mut menubar = menu::MenuBar::new(0, 0, init_width, 25, "");
     let mut table = SmartTable::default()
         .with_size(wind.width() - 2, wind.height() - 25)
         .with_pos(0, 25)
@@ -121,7 +128,7 @@ fn main() {
                 }
             };
             let title = changed(&mut table, &now.borrow());
-            if  !title.is_empty(){
+            if !title.is_empty() {
                 // println!("改变了");
 
                 Notification::new().appname("OA Notifier").subtitle("OA 更新")

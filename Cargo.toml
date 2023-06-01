@@ -1,6 +1,6 @@
 [package]
 name = "OANotifier"
-version = "1.1.0"
+version = "1.2.0"
 edition = "2021"
 authors = ["镇路晗 <a@example.com>"]
 #description = "本软件用于自动提醒吉大OA更新内容。"

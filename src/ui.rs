@@ -22,11 +22,8 @@ use crate::item::Item;
  * @this_file_name:ui
  */
 
-pub const INIT_WIDTH: i32 = 1200;
-pub const INIT_HEIGHT: i32 = 600;
 
-
-fn show_content(url: &String, title: &String)
+fn show_content(url: &String, title: &String, width: i32, height: i32)
 {
     let (content, imges) = get_content(url);
 
@@ -41,8 +38,8 @@ fn show_content(url: &String, title: &String)
         // println!("{}", e);
     }
 
-    let mut win = window::Window::default().with_size(900, 1200).with_label(title);
-    let mut txt = text::TextDisplay::default().with_size(900, 600).with_pos(0, 10);
+    let mut win = window::Window::default().with_size(width, height).with_label(title);
+    let mut txt = text::TextDisplay::default().with_size(win.width(), win.height() - 10).with_pos(0, 10);
 
     txt.set_buffer(buf);
     txt.set_color(Color::from_rgb(246, 251, 255));
@@ -53,35 +50,112 @@ fn show_content(url: &String, title: &String)
     // AtBounds 会设置文本到达输入框边界便会自动换行，对于大小可变的窗口很好用。
     txt.wrap_mode(text::WrapMode::AtBounds, 0);
     win.make_resizable(true);
-    // let mut but;
+    win.end();
+    win.show();
+    let mut vector_win_tmp = vec![];
     if !imges.is_empty() {
-        let mut frame = Frame::default().with_size(900, 600).below_of(&txt, 0);
-        frame.set_frame(FrameType::EngravedBox);
-        frame.set_color(Color::from_rgb(246, 251, 255));
-        for imgs in imges.iter()
+        for (i_size, imgs) in imges.iter().enumerate()
         {
             let bit_imges = reqwest::blocking::get(imgs).unwrap().bytes().unwrap().to_vec();
+            let images_exist;
+            let title_tmp = format!("{}-img[{}]", title, i_size + 1);
+            let mut win_tmp = window::Window::default().with_size((width as f32 * 0.618) as i32, (height as f32 * 0.618) as i32).with_label(title_tmp.as_str());
+
+            let mut frame = Frame::default().with_pos(0, 0);
+            frame.set_frame(FrameType::EngravedBox);
+
+            win_tmp.make_resizable(true);
+            // let mut image_png = PngImage::from_data(bit_imges.as_slice()).unwrap();
+            // let mut image_jpg;
 
             if imgs.contains("png") {
                 let mut image = PngImage::from_data(bit_imges.as_slice()).unwrap();
-                image.scale(900, 500, true, false);
-                frame.set_image(Some(image));
+                // image.scale(frame.width(), frame.height(), true, true);
+                let scala = image.width() as f32 / image.height() as f32;
+                let w;
+                let h;
+                if win_tmp.width() < win_tmp.height()
+                {
+                    h = win_tmp.height();
+                    w = (h as f32 * scala) as i32;
+                } else {
+                    w = win_tmp.width();
+                    h = (w as f32 / scala) as i32;
+                }
+                println!("{w},{h}");
+                frame.set_size(w, h);
+                win_tmp.set_size(w, h);
+                let win_tmp_tmp = win_tmp.clone();
+                frame.draw(move |f| {
+                    f.set_size(win_tmp_tmp.width(), win_tmp_tmp.height());
+                    image.scale(f.w(), f.h(), true, true);
+                    image.draw(f.x(), f.y(), f.w(), f.h());
+                });
+
+                images_exist = true;
             } else if imgs.contains("jpg") {
                 let mut image = JpegImage::from_data(bit_imges.as_slice()).unwrap();
-                image.scale(900, 500, true, false);
-                frame.set_image(Some(image));
+                let scala = image.width() as f32 / image.height() as f32;
+                let w;
+                let h;
+                if win_tmp.width() < win_tmp.height()
+                {
+                    h = win_tmp.height();
+                    w = (h as f32 * scala) as i32;
+                } else {
+                    w = win_tmp.width();
+                    h = (w as f32 / scala) as i32;
+                }
+                println!("{w},{h}");
+                frame.set_size(w, h);
+                win_tmp.set_size(w, h);
+                let win_tmp_tmp = win_tmp.clone();
+                frame.draw(move |f| {
+                    f.set_size(win_tmp_tmp.width(), win_tmp_tmp.height());
+                    image.scale(f.w(), f.h(), true, true);
+                    image.draw(f.x(), f.y(), f.w(), f.h());
+                });
+
+                images_exist = true;
             } else {
-                // frame.set_image(None);
+                images_exist = false;
+            }
+            drop(bit_imges);
+            if images_exist {
+                win_tmp.end();
+                win_tmp.show();
+                vector_win_tmp.push(win_tmp.clone());
             }
         }
-        // but = Button::new(1100, 510, 100, 40, "在浏览器中打开").below_of(&frame, 0);
-    } else {
-        win.set_size(900, 610);
-        txt.set_size(900, 600);
     }
 
+    // 确保关闭窗口可以让图片窗口跟着关闭
+    win.handle(move |_win, event|
+        match event {
+            Event::Hide =>
+                {
+                    println!("Hide Hide!!!!!");
+                    for w in &mut vector_win_tmp
+                    {
+                        w.hide();
+                    }
+                    true
+                }
+            Event::Show =>
+                {
+                    println!("Show Show!!!!!");
+                    for w in &mut vector_win_tmp
+                    {
+                        w.show();
+                    }
+                    true
+                }
+            _ => false,
+        });
+
+
+    //确保双击文字可以用浏览器打开网页
     let uurl = url.clone();
-    // txt.set_callback(move |_| webbrowser::open(&uurl).unwrap());
     txt.handle(move |_, event| match event {
         Event::Released => {
             if app::event_clicks_num() == 1 {
@@ -91,9 +165,6 @@ fn show_content(url: &String, title: &String)
         }
         _ => false,
     });
-
-    win.end();
-    win.show();
 }
 
 pub fn add_menu(wind: &mut DoubleWindow, menubar: &mut MenuBar, table: &mut SmartTable, vector: &RefCell<Vec<Item>>) {
@@ -184,7 +255,8 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
                 let ress = tr.callback_row();
                 // Command::new("cmd.exe").creation_flags(0x08000000).arg("/c").arg("start").arg(&tt.cell_value(ress, 3)).status().expect("Command");
                 // webbrowser::open(&tt.cell_value(ress, 3)).unwrap();
-                show_content(&tt.cell_value(ress, 3), &tt.cell_value(ress, 0));
+                let str = format!("{}：{}", tt.cell_value(ress, 0), tt.cell_value(ress, 1));
+                show_content(&tt.cell_value(ress, 3), &str, (tr.width() as f32 * 0.618) as i32, (tr.height() as f32 * 0.618) as i32);
             }
             if app::event_clicks_num() == 0
             {
@@ -243,9 +315,9 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
 pub fn draw_header(txt: &str, x: i32, y: i32, w: i32, h: i32) {
     draw::push_clip(x, y, w, h);
     draw::draw_box(
-        enums::FrameType::ThinUpBox, x, y, w, h, enums::Color::FrameDefault,
+        FrameType::ThinUpBox, x, y, w, h, Color::FrameDefault,
     );
-    draw::set_draw_color(enums::Color::Black);
+    draw::set_draw_color(Color::Black);
     draw::set_font(enums::Font::TimesBold, 16);
     draw::draw_text2(txt, x, y, w, h, enums::Align::Center);
     draw::pop_clip();
@@ -256,12 +328,12 @@ pub fn draw_header(txt: &str, x: i32, y: i32, w: i32, h: i32) {
 pub fn draw_data(txt: &str, x: i32, y: i32, w: i32, h: i32, selected: bool, is_top: bool, is_found: bool) {
     draw::push_clip(x, y, w, h);
     if selected || is_found {
-        draw::set_draw_color(enums::Color::from_u32(0x00D3_D3D3));
+        draw::set_draw_color(Color::from_u32(0x00D3_D3D3));
     } else {
-        draw::set_draw_color(enums::Color::White);
+        draw::set_draw_color(Color::from_rgb(246, 251, 255));
     }
     draw::draw_rectf(x, y, w, h);
-    draw::set_draw_color(enums::Color::Gray0);
+    draw::set_draw_color(Color::Gray0);
     if is_top {
         draw::set_font(enums::Font::TimesBold, 15);
     } else {
