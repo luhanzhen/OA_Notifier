@@ -147,12 +147,22 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
             }
 
             // 确保关闭窗口可以让图片窗口跟着关闭
+            let mut vector_win_tmp_tmp = vector_win_tmp.clone();
+            win.set_callback(move |_win| if app::event() == Event::Close {
+                // println!("Close Close!!!!!");
+                for w in &mut vector_win_tmp_tmp {
+                    w.clear();
+                    w.hide();
+                };
+                _win.clear();
+                _win.platform_hide();
+            });
             win.handle(move |_win, event| match event {
                 Event::Hide => {
                     // println!("Hide Hide!!!!!");
                     for w in &mut vector_win_tmp {
                         w.hide();
-                    }
+                    };
                     true
                 }
                 Event::Show => {
@@ -162,7 +172,11 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
                     }
                     true
                 }
-                _ => false,
+
+                _ => {
+                    // println!("!!!!!{:#}",event);
+                    false
+                }
             });
 
             //确保双击文字可以用浏览器打开网页
@@ -217,14 +231,14 @@ pub fn add_menu(
                         Some(code) => {
                             if !code.is_empty() {
                                 // let code = String::from("吉林");
-                                println!("Finding...{}", code);
+                                // println!("Finding...{}", code);
                                 tt.set_selection(-1, -1, -1, -1);
                                 for i in 0..vv.borrow().len()
                                 {
                                     let t = &vv.borrow()[i];
                                     if t.title.contains(&code) || t.source.contains(&code) || t.time.contains(&code)
                                     {
-                                        println!("Found == {}", i);
+                                        // println!("Found == {}", i);
                                         tt.set_cell_value(i as i32, 4, "f");
                                         tt.redraw();
                                     }

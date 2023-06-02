@@ -47,7 +47,7 @@ pub fn get_content(url: &str) -> Option<(Vec<String>, Vec<String>)> {
 
             for e in sub_document.select(&img_selector) {
                 let img = format!("{}{}", pre, e.value().attr("src").unwrap());
-                println!("{}", img);
+                // println!("{}", img);
                 imges.push(img);
             }
             let mut strings = vec![];

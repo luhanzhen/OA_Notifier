@@ -83,7 +83,15 @@ fn main() {
         wind.set_icon(Some(icon));
     }
 
-    wind.set_callback(move |_| if app::event() == enums::Event::Close {});
+    wind.set_callback(move |_win|
+        if app::event() == enums::Event::Close {
+            // _win.visible();
+
+        // } else if app::event() == enums::Event::Show
+        // {
+        //     _win.set_size(init_width, init_height);
+        }
+    );
 
     let timer = timer::Timer::new();
     let _guard = {
