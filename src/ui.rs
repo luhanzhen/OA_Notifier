@@ -23,166 +23,162 @@ use webbrowser;
  */
 
 fn show_content(url: &String, title: &String, width: i32, height: i32) {
-    let (content, imges) = get_content(url);
-
-    let mut buf = text::TextBuffer::default();
-    // buf.set_text("Hello world!");
-    // buf.append("\n");
-    // buf.append("This is a text editor!");
-    for e in content.iter() {
-        buf.append(e);
-        // buf.append("\n");
-        // println!("{}", e);
-    }
-
-    let mut win = window::Window::default()
-        .with_size(width, height)
-        .with_label(title);
-    let mut txt = text::TextDisplay::default()
-        .with_size(win.width(), win.height() - 50)
-        .with_pos(0, 10);
-
-    //为了下载附件，可能有多个附件
-    let mut btn = Frame::default()
-        .with_label("Click")
-        .below_of(&txt, 0)
-        .with_size(100, 30);
-    btn.set_color(Color::from_rgb(246, 251, 255));
-
-    btn.handle(move |tr, event| match event {
-        Event::Released => {
-            if app::event_clicks_num() == 0 {
-                println!("btn1 is checked");
+    match get_content(url) {
+        Some((content, images)) => {
+            let mut buf = text::TextBuffer::default();
+            for e in content.iter() {
+                buf.append(e);
             }
-            true
-        }
-        _ => false,
-    });
 
-    txt.set_buffer(buf);
-    txt.set_color(Color::from_rgb(246, 251, 255));
-    win.set_color(Color::from_rgb(246, 251, 255));
+            let mut win = window::Window::default()
+                .with_size(width, height)
+                .with_label(title);
+            let mut txt = text::TextDisplay::default()
+                .with_size(win.width(), win.height() - 10)
+                .with_pos(0, 10);
 
-    // 设置换行模式
-    // 不同于 AtPixel 和 AtColumn, AtBounds不需要第二个参数
-    // AtBounds 会设置文本到达输入框边界便会自动换行，对于大小可变的窗口很好用。
-    txt.wrap_mode(text::WrapMode::AtBounds, 0);
-    win.make_resizable(true);
-    win.end();
-    win.show();
-    let mut vector_win_tmp = vec![];
-    if !imges.is_empty() {
-        for (i_size, imgs) in imges.iter().enumerate() {
-            let bit_imges = reqwest::blocking::get(imgs)
-                .unwrap()
-                .bytes()
-                .unwrap()
-                .to_vec();
-            let images_exist;
-            let title_tmp = format!("{}-img[{}]", title, i_size + 1);
-            let mut win_tmp = window::Window::default()
-                .with_size(
-                    (width as f32 * 0.618) as i32,
-                    (height as f32 * 0.618) as i32,
-                )
-                .with_label(title_tmp.as_str());
+            //为了下载附件，可能有多个附件
+            // let mut btn = Frame::default()
+            //     .with_label("Click")
+            //     .below_of(&txt, 0)
+            //     .with_size(100, 30);
+            // btn.set_color(Color::from_rgb(246, 251, 255));
+            //
+            // btn.handle(move |tr, event| match event {
+            //     Event::Released => {
+            //         if app::event_clicks_num() == 0 {
+            //             println!("btn1 is checked");
+            //         }
+            //         true
+            //     }
+            //     _ => false,
+            // });
 
-            let mut frame = Frame::default().with_pos(0, 0);
-            frame.set_frame(FrameType::EngravedBox);
+            txt.set_buffer(buf);
+            txt.set_color(Color::from_rgb(246, 251, 255));
+            win.set_color(Color::from_rgb(246, 251, 255));
 
-            win_tmp.make_resizable(true);
-            // let mut image_png = PngImage::from_data(bit_imges.as_slice()).unwrap();
-            // let mut image_jpg;
+            // 设置换行模式
+            // 不同于 AtPixel 和 AtColumn, AtBounds不需要第二个参数
+            // AtBounds 会设置文本到达输入框边界便会自动换行，对于大小可变的窗口很好用。
+            txt.wrap_mode(text::WrapMode::AtBounds, 0);
+            win.make_resizable(true);
+            win.end();
+            win.show();
+            let mut vector_win_tmp = vec![];
+            if !images.is_empty() {
+                for (i_size, imgs) in images.iter().enumerate() {
+                    let bit_imges = reqwest::blocking::get(imgs)
+                        .unwrap()
+                        .bytes()
+                        .unwrap()
+                        .to_vec();
+                    let images_exist;
+                    let title_tmp = format!("{}-img[{}]", title, i_size + 1);
+                    let mut win_tmp = window::Window::default()
+                        .with_size(
+                            (width as f32 * 0.618) as i32,
+                            (height as f32 * 0.618) as i32,
+                        )
+                        .with_label(title_tmp.as_str());
 
-            if imgs.contains("png") {
-                let mut image = PngImage::from_data(bit_imges.as_slice()).unwrap();
-                // image.scale(frame.width(), frame.height(), true, true);
-                let scala = image.width() as f32 / image.height() as f32;
-                let w;
-                let h;
-                if win_tmp.width() < win_tmp.height() {
-                    h = win_tmp.height();
-                    w = (h as f32 * scala) as i32;
-                } else {
-                    w = win_tmp.width();
-                    h = (w as f32 / scala) as i32;
+                    let mut frame = Frame::default().with_pos(0, 0);
+                    frame.set_frame(FrameType::EngravedBox);
+
+                    win_tmp.make_resizable(true);
+
+                    if imgs.contains("png") {
+                        let mut image = PngImage::from_data(bit_imges.as_slice()).unwrap();
+
+                        let scala = image.width() as f32 / image.height() as f32;
+                        let w: i32;
+                        let h: i32;
+                        if win_tmp.width() < win_tmp.height() {
+                            h = win_tmp.height();
+                            w = (h as f32 * scala) as i32;
+                        } else {
+                            w = win_tmp.width();
+                            h = (w as f32 / scala) as i32;
+                        }
+                        // println!("{w},{h}");
+                        frame.set_size(w, h);
+                        win_tmp.set_size(w, h);
+                        let win_tmp_tmp = win_tmp.clone();
+                        frame.draw(move |f| {
+                            f.set_size(win_tmp_tmp.width(), win_tmp_tmp.height());
+                            image.scale(f.w(), f.h(), true, true);
+                            image.draw(f.x(), f.y(), f.w(), f.h());
+                        });
+
+                        images_exist = true;
+                    } else if imgs.contains("jpg") {
+                        let mut image = JpegImage::from_data(bit_imges.as_slice()).unwrap();
+                        let scala = image.width() as f32 / image.height() as f32;
+                        let w;
+                        let h;
+                        if win_tmp.width() < win_tmp.height() {
+                            h = win_tmp.height();
+                            w = (h as f32 * scala) as i32;
+                        } else {
+                            w = win_tmp.width();
+                            h = (w as f32 / scala) as i32;
+                        }
+                        // println!("{w},{h}");
+                        frame.set_size(w, h);
+                        win_tmp.set_size(w, h);
+                        let win_tmp_tmp = win_tmp.clone();
+                        frame.draw(move |f| {
+                            f.set_size(win_tmp_tmp.width(), win_tmp_tmp.height());
+                            image.scale(f.w(), f.h(), true, true);
+                            image.draw(f.x(), f.y(), f.w(), f.h());
+                        });
+
+                        images_exist = true;
+                    } else {
+                        images_exist = false;
+                    }
+                    drop(bit_imges);
+                    if images_exist {
+                        win_tmp.end();
+                        win_tmp.show();
+                        vector_win_tmp.push(win_tmp.clone());
+                    }
                 }
-                println!("{w},{h}");
-                frame.set_size(w, h);
-                win_tmp.set_size(w, h);
-                let win_tmp_tmp = win_tmp.clone();
-                frame.draw(move |f| {
-                    f.set_size(win_tmp_tmp.width(), win_tmp_tmp.height());
-                    image.scale(f.w(), f.h(), true, true);
-                    image.draw(f.x(), f.y(), f.w(), f.h());
-                });
+            }
 
-                images_exist = true;
-            } else if imgs.contains("jpg") {
-                let mut image = JpegImage::from_data(bit_imges.as_slice()).unwrap();
-                let scala = image.width() as f32 / image.height() as f32;
-                let w;
-                let h;
-                if win_tmp.width() < win_tmp.height() {
-                    h = win_tmp.height();
-                    w = (h as f32 * scala) as i32;
-                } else {
-                    w = win_tmp.width();
-                    h = (w as f32 / scala) as i32;
+            // 确保关闭窗口可以让图片窗口跟着关闭
+            win.handle(move |_win, event| match event {
+                Event::Hide => {
+                    // println!("Hide Hide!!!!!");
+                    for w in &mut vector_win_tmp {
+                        w.hide();
+                    }
+                    true
                 }
-                println!("{w},{h}");
-                frame.set_size(w, h);
-                win_tmp.set_size(w, h);
-                let win_tmp_tmp = win_tmp.clone();
-                frame.draw(move |f| {
-                    f.set_size(win_tmp_tmp.width(), win_tmp_tmp.height());
-                    image.scale(f.w(), f.h(), true, true);
-                    image.draw(f.x(), f.y(), f.w(), f.h());
-                });
+                Event::Show => {
+                    // println!("Show Show!!!!!");
+                    for w in &mut vector_win_tmp {
+                        w.show();
+                    }
+                    true
+                }
+                _ => false,
+            });
 
-                images_exist = true;
-            } else {
-                images_exist = false;
-            }
-            drop(bit_imges);
-            if images_exist {
-                win_tmp.end();
-                win_tmp.show();
-                vector_win_tmp.push(win_tmp.clone());
-            }
+            //确保双击文字可以用浏览器打开网页
+            let uurl = url.clone();
+            txt.handle(move |_, event| match event {
+                Event::Released => {
+                    if app::event_clicks_num() == 1 {
+                        webbrowser::open(&uurl).unwrap()
+                    }
+                    true
+                }
+                _ => false,
+            });
         }
+        None => {}
     }
-
-    // 确保关闭窗口可以让图片窗口跟着关闭
-    win.handle(move |_win, event| match event {
-        Event::Hide => {
-            println!("Hide Hide!!!!!");
-            for w in &mut vector_win_tmp {
-                w.hide();
-            }
-            true
-        }
-        Event::Show => {
-            println!("Show Show!!!!!");
-            for w in &mut vector_win_tmp {
-                w.show();
-            }
-            true
-        }
-        _ => false,
-    });
-
-    //确保双击文字可以用浏览器打开网页
-    let uurl = url.clone();
-    txt.handle(move |_, event| match event {
-        Event::Released => {
-            if app::event_clicks_num() == 1 {
-                webbrowser::open(&uurl).unwrap()
-            }
-            true
-        }
-        _ => false,
-    });
 }
 
 pub fn add_menu(
@@ -217,22 +213,25 @@ pub fn add_menu(
                     {
                         tt.set_cell_value(i, 4, "");
                     }
-
-                    let code = dialog::input_default("输入要查找的内容:", "").unwrap();
-                    if !code.is_empty() {
-                        // let code = String::from("吉林");
-                        println!("Finding...{}", code);
-                        tt.set_selection(-1, -1, -1, -1);
-                        for i in 0..vv.borrow().len()
-                        {
-                            let t = &vv.borrow()[i];
-                            if t.title.contains(&code) || t.source.contains(&code) || t.time.contains(&code)
-                            {
-                                println!("Found == {}", i);
-                                tt.set_cell_value(i as i32, 4, "f");
-                                tt.redraw();
+                    match dialog::input_default("输入要查找的内容:", "") {
+                        Some(code) => {
+                            if !code.is_empty() {
+                                // let code = String::from("吉林");
+                                println!("Finding...{}", code);
+                                tt.set_selection(-1, -1, -1, -1);
+                                for i in 0..vv.borrow().len()
+                                {
+                                    let t = &vv.borrow()[i];
+                                    if t.title.contains(&code) || t.source.contains(&code) || t.time.contains(&code)
+                                    {
+                                        println!("Found == {}", i);
+                                        tt.set_cell_value(i as i32, 4, "f");
+                                        tt.redraw();
+                                    }
+                                }
                             }
                         }
+                        None => {}
                     }
                 }
                 "@-> " => {

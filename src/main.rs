@@ -29,7 +29,6 @@ use ui::*;
  * @this_file_name:main
  */
 
-
 fn main() {
     let screens = Screen::all_screens();
     // println!("{} - {}", screens[0].w(), screens[0].h());
@@ -79,6 +78,13 @@ fn main() {
     wind.show();
 
     drop(vector);
+    if fs::metadata("./icon.ico").is_ok() {
+        let icon: IcoImage = IcoImage::load(&Path::new("icon.ico")).unwrap();
+        wind.set_icon(Some(icon));
+    }
+
+    wind.set_callback(move |_| if app::event() == enums::Event::Close {});
+
     let timer = timer::Timer::new();
     let _guard = {
         // let count = count.clone();
@@ -136,15 +142,6 @@ fn main() {
             drop(now);
         })
     };
-
-    println!("This code has been executed after 3 seconds");
-
-    if fs::metadata("./icon.ico").is_ok() {
-        let icon: IcoImage = IcoImage::load(&Path::new("icon.ico")).unwrap();
-        wind.set_icon(Some(icon));
-    }
-
-    wind.set_callback(move |_| if app::event() == enums::Event::Close {});
 
     app.run().unwrap();
     drop(_guard);
