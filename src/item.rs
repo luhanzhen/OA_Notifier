@@ -15,8 +15,6 @@ pub struct Item {
     pub is_top: bool,
 }
 
-// pub static  mut VECTOR: Vec<Item> = vec![];
-
 // impl Initialize for Item {
 //     fn initialize(&mut self, title: String, time: String, source: String, href: String)
 //     {

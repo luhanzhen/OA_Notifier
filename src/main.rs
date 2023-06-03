@@ -39,19 +39,23 @@ fn main() {
 
     let mut vector: RefCell<Vec<Item>> = RefCell::new(vec![]);
 
-    get_html(&mut vector);
-    if vector.borrow().is_empty() {
-        for _ in 0..90 {
-            let item = Item {
-                title: String::from("不能访问OA，网络不可用"),
-                time: String::from("。"),
-                source: String::from("。"),
-                href: String::from("。"),
-                is_top: false,
-            };
-            vector.borrow_mut().push(item);
+    match get_html(&mut vector) {
+        Some(_) => {}
+        None => {
+            if vector.borrow().is_empty() {
+                for _ in 0..90 {
+                    let item = Item {
+                        title: String::from("不能访问OA，网络不可用"),
+                        time: String::from("。"),
+                        source: String::from("。"),
+                        href: String::from("。"),
+                        is_top: false,
+                    };
+                    vector.borrow_mut().push(item);
+                }
+            }
         }
-    }
+    };
 
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
 
@@ -59,6 +63,10 @@ fn main() {
         .with_size(init_width, init_height)
         .with_label("OA Notifier");
 
+    if fs::metadata("./icon.ico").is_ok() {
+        let icon: IcoImage = IcoImage::load(&Path::new("icon.ico")).unwrap();
+        wind.set_icon(Some(icon));
+    }
     let mut menubar = menu::MenuBar::new(0, 0, init_width, 25, "");
     let mut table = SmartTable::default()
         .with_size(wind.width() - 2, wind.height() - 25)
@@ -78,20 +86,16 @@ fn main() {
     wind.show();
 
     drop(vector);
-    if fs::metadata("./icon.ico").is_ok() {
-        let icon: IcoImage = IcoImage::load(&Path::new("icon.ico")).unwrap();
-        wind.set_icon(Some(icon));
-    }
 
-    wind.set_callback(move |_win|
+    wind.set_callback(move |_win| {
         if app::event() == enums::Event::Close {
             // _win.visible();
 
-        // } else if app::event() == enums::Event::Show
-        // {
-        //     _win.set_size(init_width, init_height);
+            // } else if app::event() == enums::Event::Show
+            // {
+            //     _win.set_size(init_width, init_height);
         }
-    );
+    });
 
     let timer = timer::Timer::new();
     let _guard = {
@@ -99,7 +103,12 @@ fn main() {
         timer.schedule_repeating(chrono::Duration::seconds(600), move || {
             // println!("hello world");
             let mut now: RefCell<Vec<Item>> = RefCell::new(vec![]);
-            get_html(&mut now);
+            match get_html(&mut now) {
+                Some(_) => {}
+                None => {
+                    return;
+                }
+            }
             if now.borrow().len() != table.rows() as usize {
                 return;
             }
@@ -121,14 +130,16 @@ fn main() {
             let title = changed(&mut table, &now.borrow());
             if !title.is_empty() {
                 // println!("改变了");
-
-                Notification::new()
+                match Notification::new()
                     .appname("OA Notifier")
                     .subtitle("OA 更新")
                     .body(title.as_str())
                     .icon("firefox")
                     .show()
-                    .unwrap();
+                {
+                    Ok(_) => println!("Notification successfully"),
+                    Err(_) => println!("Notification error"),
+                }
             }
             for i in 0..now.borrow().len() {
                 if now.borrow()[i as usize].is_top {

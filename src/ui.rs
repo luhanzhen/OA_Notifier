@@ -13,7 +13,6 @@ use fltk::{prelude::*, *};
 use fltk_table::SmartTable;
 use webbrowser;
 
-// use crate::item::VECTOR;
 /**
  * @project_name: OANotifier
  * @user_name: luhanzhen
@@ -148,21 +147,23 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
 
             // 确保关闭窗口可以让图片窗口跟着关闭
             let mut vector_win_tmp_tmp = vector_win_tmp.clone();
-            win.set_callback(move |_win| if app::event() == Event::Close {
-                // println!("Close Close!!!!!");
-                for w in &mut vector_win_tmp_tmp {
-                    w.clear();
-                    w.hide();
-                };
-                _win.clear();
-                _win.platform_hide();
+            win.set_callback(move |_win| {
+                if app::event() == Event::Close {
+                    // println!("Close Close!!!!!");
+                    for w in &mut vector_win_tmp_tmp {
+                        w.clear();
+                        w.hide();
+                    }
+                    _win.clear();
+                    _win.platform_hide();
+                }
             });
             win.handle(move |_win, event| match event {
                 Event::Hide => {
                     // println!("Hide Hide!!!!!");
                     for w in &mut vector_win_tmp {
                         w.hide();
-                    };
+                    }
                     true
                 }
                 Event::Show => {

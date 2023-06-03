@@ -73,14 +73,14 @@ pub fn get_content(url: &str) -> Option<(Vec<String>, Vec<String>)> {
     return None;
 }
 
-fn get_info(url: &str, vec: &mut Box<Vec<Item>>) {
+fn get_info(url: &str, vec: &mut Box<Vec<Item>>) -> Option<bool> {
     // let pre = String::from("https://oa.jlu.edu.cn/defaultroot/");
     let pre = "https://oa.jlu.edu.cn/defaultroot/";
     match reqwest::blocking::get(url) {
         Ok(webpage) => {
             let response = webpage.text().unwrap();
             if response.is_empty() {
-                return;
+                return None;
             }
             // let response= fs::read_to_string(".\\test.html").unwrap();
             let document = scraper::Html::parse_document(&response);
@@ -121,12 +121,15 @@ fn get_info(url: &str, vec: &mut Box<Vec<Item>>) {
                 };
                 vec.push(a);
             }
+            return Some(true);
         }
-        Err(_) => {}
+        Err(_) => {
+            return None;
+        }
     }
 }
 
-pub fn get_html(vector: &mut RefCell<Vec<Item>>) {
+pub fn get_html(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Item>>> {
     let url1 = "https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage=1";
     let url2 = "https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage=2";
     let url3 = "https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage=3";
@@ -139,15 +142,30 @@ pub fn get_html(vector: &mut RefCell<Vec<Item>>) {
     let (tx3, rx3) = mpsc::channel();
 
     let t1 = thread::spawn(move || {
-        get_info(url1, &mut vec_1);
+        match get_info(url1, &mut vec_1) {
+            Some(_) => {}
+            None => {
+                return;
+            }
+        }
         tx1.send(vec_1).unwrap();
     });
     let t2 = thread::spawn(move || {
-        get_info(url2, &mut vec_2);
+        match get_info(url2, &mut vec_2) {
+            Some(_) => {}
+            None => {
+                return;
+            }
+        }
         tx2.send(vec_2).unwrap();
     });
     let t3 = thread::spawn(move || {
-        get_info(url3, &mut vec_3);
+        match get_info(url3, &mut vec_3) {
+            Some(_) => {}
+            None => {
+                return;
+            }
+        }
         tx3.send(vec_3).unwrap();
     });
 
@@ -160,7 +178,7 @@ pub fn get_html(vector: &mut RefCell<Vec<Item>>) {
     vec_3 = rx3.recv().unwrap();
 
     if vec_1.len() != 30 && vec_2.len() != 30 && vec_3.len() != 30 {
-        return;
+        return None;
     }
 
     vector.borrow_mut().clear();
@@ -180,4 +198,5 @@ pub fn get_html(vector: &mut RefCell<Vec<Item>>) {
         let ee = e.clone();
         vector.borrow_mut().push(ee);
     }
+    Some(vector)
 }
