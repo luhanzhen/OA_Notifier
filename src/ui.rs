@@ -214,8 +214,8 @@ pub fn add_menu(
     sender_keywords: Sender<String>,
 ) {
     menubar.add_choice("关于  |搜索  |过滤  ");
-    let windx = menubar.width() + wind.x_root();
-    let windy = menubar.height() + wind.y_root();
+    let windx = wind.x_root();
+    let windy = wind.y_root();
     let vv = RefCell::clone(vector);
     let mut tt = table.clone();
     let mut last_keywords = String::from(""); //记住上次设置的关键字
@@ -224,7 +224,7 @@ pub fn add_menu(
             match choice.as_str() {
                 "过滤  " => {
                     dialog::message_title("OA Notifier 过滤");
-                    match dialog::input_default("输入要过滤的内容，用空格隔开:", last_keywords.as_str()) {
+                    match dialog::input(c.x()+windx,c.y()+windy,"输入要过滤的内容，用空格隔开:", last_keywords.as_str()) {
                         Some(code) => {
                             // println!("{}", code);
                             last_keywords = code.clone(); //更新关键字
@@ -238,7 +238,7 @@ pub fn add_menu(
                 }
                 "关于  " => {
                     dialog::message_title("OA Notifier 关于");
-                    dialog::message(windx, windy, "使用本软件即同意以下内容:
+                    dialog::message(c.x()+windx,c.y()+windy, "使用本软件即同意以下内容:
                                     本软件当前版本号为1.3.0。
                                     本软件用于自动提醒吉林大学OA更新内容。
                                     双击表格点开信息，右击表格在浏览器中打开网页。
@@ -246,7 +246,6 @@ pub fn add_menu(
                                     支持过滤关键信息，过滤可以是多个关键字，关键字之间必须用空格隔开。
                                     无关键字的情况下，会通知全部信息。
                                     内容页支持图片显示，附件下载目前尚未支持，双击内容页或者图片也可以在浏览器中打开网页。
-                                    为了防止误触，只能点击菜单栏退出才能关闭程序。
                                     本软件每隔十分钟爬取oa网站前三页的内容。
                                     本软件承诺保护用户隐私，不收集任何信息。
                                     本软件著作权及其解释权归作者镇路晗所有。
@@ -262,7 +261,7 @@ pub fn add_menu(
                         tt.set_cell_value(i, 4, "");
                     }
                     dialog::message_title("OA Notifier 搜索");
-                    match dialog::input_default("输入要查找的内容:", "") {
+                    match dialog::input(c.x()+windx,c.y()+windy,"输入要查找的内容:", "") {
                         Some(code) => {
                             if !code.is_empty() {
                                 // let code = String::from("吉林");
