@@ -85,7 +85,7 @@ fn main() {
         &mut menubar,
         &mut table,
         &vector,
-        sender_keywords
+        sender_keywords,
     );
 
     add_table(&mut table, &mut wind, &mut vector);
@@ -95,14 +95,26 @@ fn main() {
 
     drop(vector);
 
+
     wind.set_callback(move |_win| {
         if app::event() == enums::Event::Close {
-            // _win.visible();
-
-            // } else if app::event() == enums::Event::Show
-            // {
-            //     _win.set_size(init_width, init_height);
+            dialog::message_title("退出确认?");
+            match dialog::choice2(_win.x() + _win.width() / 3 * 2, _win.y() + 10, "确定要退出吗？", "否", "是", "")
+            {
+                Some(choice) => {
+                    // println!("full screen!!!{choice}");
+                    if choice == 1
+                    {
+                        app::quit();
+                    }
+                }
+                None => {}
+            }
         }
+
+        // if _ == enums::Event::Resize {
+        //     println!("full screen!!!");
+        // }
     });
 
     let timer = timer::Timer::new();

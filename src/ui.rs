@@ -216,7 +216,7 @@ pub fn add_menu(
     vector: &RefCell<Vec<Item>>,
     sender_keywords: Sender<String>,
 ) {
-    menubar.add_choice("关于  |搜索  |过滤  |退出  ");
+    menubar.add_choice("关于  |搜索  |过滤  ");
     let windx = menubar.width() + wind.x_root();
     let windy = menubar.height() + wind.y_root();
     let vv = RefCell::clone(vector);
@@ -285,10 +285,6 @@ pub fn add_menu(
                         }
                         None => {}
                     }
-                }
-                "退出  " => {
-                    // println!("Quitting");
-                    app::quit();
                 }
                 _ => unreachable!(),
             }
