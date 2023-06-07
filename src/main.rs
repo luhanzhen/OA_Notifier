@@ -39,7 +39,7 @@ fn main() {
 
     let mut vector: RefCell<Vec<Item>> = RefCell::new(vec![]);
 
-    match get_html(&mut vector) {
+    match get_table(&mut vector) {
         Some(_) => {}
         None => {
             if vector.borrow().is_empty() {
@@ -136,7 +136,7 @@ fn main() {
                 Err(_) => {}
             }
 
-            match get_html(&mut now) {
+            match get_table(&mut now) {
                 Some(_) => {}
                 None => {
                     return;

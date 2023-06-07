@@ -65,7 +65,7 @@ pub fn get_content(url: &str) -> Option<(Vec<String>, Vec<String>)> {
     return None;
 }
 
-fn get_info(url: &str, vec: &mut Box<Vec<Item>>) -> Option<bool> {
+fn get_page(url: &str, vec: &mut Box<Vec<Item>>) -> Option<bool> {
     // let pre = String::from("https://oa.jlu.edu.cn/defaultroot/");
     let pre = "https://oa.jlu.edu.cn/defaultroot/";
     match reqwest::blocking::get(url) {
@@ -121,7 +121,7 @@ fn get_info(url: &str, vec: &mut Box<Vec<Item>>) -> Option<bool> {
     }
 }
 
-pub fn get_html(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Item>>> {
+pub fn get_table(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Item>>> {
     let url1 = "https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage=1";
     let url2 = "https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage=2";
     let url3 = "https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage=3";
@@ -134,7 +134,7 @@ pub fn get_html(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Item
     let (tx3, rx3) = mpsc::channel();
 
     let t1 = thread::spawn(move || {
-        match get_info(url1, &mut vec_1) {
+        match get_page(url1, &mut vec_1) {
             Some(_) => {}
             None => {
                 return;
@@ -143,7 +143,7 @@ pub fn get_html(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Item
         tx1.send(vec_1).unwrap();
     });
     let t2 = thread::spawn(move || {
-        match get_info(url2, &mut vec_2) {
+        match get_page(url2, &mut vec_2) {
             Some(_) => {}
             None => {
                 return;
@@ -152,7 +152,7 @@ pub fn get_html(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Item
         tx2.send(vec_2).unwrap();
     });
     let t3 = thread::spawn(move || {
-        match get_info(url3, &mut vec_3) {
+        match get_page(url3, &mut vec_3) {
             Some(_) => {}
             None => {
                 return;
