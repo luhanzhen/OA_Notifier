@@ -95,16 +95,20 @@ fn main() {
 
     drop(vector);
 
-
     wind.set_callback(move |_win| {
         if app::event() == enums::Event::Close {
             dialog::message_title("退出确认?");
-            match dialog::choice2(_win.x() + _win.width() / 3 * 2, _win.y() + 10, "确定要退出吗？", "否", "是", "")
-            {
+            match dialog::choice2(
+                _win.x() + _win.width() / 3 * 2,
+                _win.y() + 10,
+                "确定要退出吗？",
+                "否",
+                "是",
+                "",
+            ) {
                 Some(choice) => {
                     // println!("full screen!!!{choice}");
-                    if choice == 1
-                    {
+                    if choice == 1 {
                         app::quit();
                     }
                 }

@@ -59,9 +59,6 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
             txt.set_color(Color::from_rgb(246, 251, 255));
             win.set_color(Color::from_rgb(246, 251, 255));
 
-            // 设置换行模式
-            // 不同于 AtPixel 和 AtColumn, AtBounds不需要第二个参数
-            // AtBounds 会设置文本到达输入框边界便会自动换行，对于大小可变的窗口很好用。
             txt.wrap_mode(text::WrapMode::AtBounds, 0);
             win.make_resizable(true);
             win.end();
