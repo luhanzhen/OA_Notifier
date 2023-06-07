@@ -6,30 +6,11 @@
  * @this_file_name:Item
  */
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Item {
-    pub title: String,
-    pub time: String,
-    pub source: String,
-    pub href: String,
-    pub is_top: bool,
+    pub title: String, //新消息的标题
+    pub time: String,  //新消息的时间
+    pub source: String, //新消息的来源
+    pub href: String, //链接
+    pub is_top: bool, //是否是置顶的内容
 }
-
-// impl Initialize for Item {
-//     fn initialize(&mut self, title: String, time: String, source: String, href: String)
-//     {
-//         self.title = title;
-//         self.time = time;
-//         self.source = source;
-//         self.href = href;
-//     }
-// }
-
-// impl Clone for Item {
-//     fn clone(&mut self) -> Self {
-//         self.title = title.clone();
-//         self.time = time.clone();
-//         self.source = source.clone();
-//         self.href = href.clone();
-//     }
-// }
