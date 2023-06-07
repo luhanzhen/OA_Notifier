@@ -85,7 +85,7 @@ fn main() {
         &mut menubar,
         &mut table,
         &vector,
-        sender_keywords,
+        sender_keywords
     );
 
     add_table(&mut table, &mut wind, &mut vector);
@@ -107,9 +107,11 @@ fn main() {
 
     let timer = timer::Timer::new();
     let mut keywords = String::from("");
+
     let _guard = {
         // let count = count.clone();
-        timer.schedule_repeating(chrono::Duration::seconds(60), move || {
+
+        timer.schedule_repeating(chrono::Duration::seconds(600), move || {
             let mut now: RefCell<Vec<Item>> = RefCell::new(vec![]);
             match receiver_keywords.try_recv() {
                 Ok(keyword) => {
@@ -117,20 +119,19 @@ fn main() {
                 }
                 Err(_) => {}
             }
+
             match get_html(&mut now) {
                 Some(_) => {}
                 None => {
                     return;
                 }
             }
-            if now.borrow().len() != table.rows() as usize {
-                return;
-            }
+            // if now.borrow().len() != table.rows() as usize {
+            //     return;
+            // }
             let changed = |table: &mut SmartTable, curr: &Ref<Vec<Item>>| -> Vec<Item> {
                 let mut new_items = vec![];
-                if curr.is_empty() {
-                    return new_items;
-                } else {
+                if !curr.is_empty() {
                     let mut set: HashSet<String> = HashSet::new();
                     for i in 0..table.rows() {
                         let other = table.cell_value(i as i32, 0).replace("[置顶]", "");
@@ -139,19 +140,20 @@ fn main() {
                     for i in 0..curr.len() {
                         if !set.contains(curr[i].title.as_str()) {
                             new_items.push(curr[i].clone());
+                            println!("新通知：{}", curr[i].title)
                         }
                     }
-                    return new_items;
                 }
+                return new_items;
             };
 
             let filter = |new_items: Vec<Item>, keyword: String| -> Vec<Item> {
-                if keyword.is_empty()
+                let keys: Vec<&str> = keyword.split_whitespace().collect();
+                if keys.is_empty()
                 //没有关键字 就什么都不做。
                 {
                     return new_items;
                 }
-                let keys: Vec<&str> = keyword.split(" ").collect();
                 for k in keys.iter() {
                     println!("keywords: {:?}", k);
                 }
@@ -173,6 +175,9 @@ fn main() {
                             || item.time.contains(key)
                         {
                             found = true;
+                        }
+                        if found {
+                            break;
                         }
                         for line in content.iter() {
                             if line.contains(key) {
@@ -198,13 +203,14 @@ fn main() {
                 for title in filtered {
                     println!("{}", title.title);
                     match Notification::new()
-                        .appname("OA Notifier")
-                        .subtitle("OA 更新")
+                        .appname("OA Notifier⚠️⚠️⚠️")
+                        .subtitle(title.source.as_str())
                         .body(title.title.as_str())
-                        .icon("firefox")
                         .show()
                     {
-                        Ok(_) => println!("Notification successfully"),
+                        Ok(_) => {
+                            println!("Notification successfully");
+                        }
                         Err(_) => println!("Notification error"),
                     }
                 }

@@ -216,7 +216,7 @@ pub fn add_menu(
     vector: &RefCell<Vec<Item>>,
     sender_keywords: Sender<String>,
 ) {
-    menubar.add_choice("关于 |搜索 |过滤 |退出 ");
+    menubar.add_choice("关于  |搜索  |过滤  |退出  ");
     let windx = menubar.width() + wind.x_root();
     let windy = menubar.height() + wind.y_root();
     let vv = RefCell::clone(vector);
@@ -225,7 +225,7 @@ pub fn add_menu(
     menubar.set_callback(move |c| {
         if let Some(choice) = c.choice() {
             match choice.as_str() {
-                "过滤 " => {
+                "过滤  " => {
                     dialog::message_title("OA Notifier 过滤");
                     match dialog::input_default("输入要过滤的内容，用空格隔开:", last_keywords.as_str()) {
                         Some(code) => {
@@ -233,28 +233,33 @@ pub fn add_menu(
                             last_keywords = code.clone(); //更新关键字
                             sender_keywords.send(code).unwrap();
 
+
                             // 发送刚才输入的关键字
                         }
                         None => {}
                     }
                 }
-                "关于 " => {
+                "关于  " => {
                     dialog::message_title("OA Notifier 关于");
                     dialog::message(windx, windy, "使用本软件即同意以下内容:
                                     本软件当前版本号为1.3.0。
                                     本软件用于自动提醒吉大OA更新内容。
-                                    双击点开信息，支持搜索。
-                                    双击内容页可在浏览器中打开该网页。
+                                    双击表格点开信息，右击表格打开网页。
+                                    支持搜索，但是搜索不能查找内容，原因是考虑到搜索的快速响应。
+                                    支持过滤关键信息，过滤可以是多个关键字，关键字之间必须用空格隔开。
+                                    无关键字的情况下，会通知全部信息。
+                                    内容页支持图片显示，附件下载目前尚未支持，双击内容页或者图片也可以打开网页。
+                                    为了防止误触，只能点击菜单栏退出才能关闭程序。
                                     本软件每隔十分钟爬取oa网站前三页的内容。
                                     本软件承诺保护用户隐私，不收集任何信息。
                                     本软件著作权及其解释权归作者镇路晗所有。
                                     项目源代码及最新版在网站[https://github.com/luhanzhen/OA_Notifier]上。
-                                    有建议或者其它需求建议可以给我留言。
+                                    有好的建议或者其它需求建议可以给我留言。
                                     个人用户享有使用权，作者不对使用者造成的后果负责。
                                     本软件仅供个人使用，不可用于商业盈利目的或者非法目的。
                                     请主动遵守国家法律法规和学校的有关规定，非法或者违规行为造成的法律责任和后果自负。");
                 }
-                "搜索 " => {
+                "搜索  " => {
                     for i in 0..tt.rows()
                     {
                         tt.set_cell_value(i, 4, "");
@@ -281,7 +286,7 @@ pub fn add_menu(
                         None => {}
                     }
                 }
-                "退出 " => {
+                "退出  " => {
                     // println!("Quitting");
                     app::quit();
                 }
@@ -303,7 +308,7 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
     table.set_col_width(3, 0);
     table.set_col_width(4, 0);
 
-    table.set_col_header_height((table.height() as f32 * 0.045) as i32);
+    table.set_col_header_height((table.height() as f32 * 0.038) as i32);
 
     wind.make_resizable(true);
 
@@ -316,7 +321,7 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
     let mut tt = table.clone();
     table.handle(move |tr, event| match event {
         Event::Released => {
-            if app::event_clicks_num() == 1 {
+            if app::event_clicks_num() == 1 && app::event_mouse_button() == app::MouseButton::Left {
                 let ress = tr.callback_row();
                 // Command::new("cmd.exe").creation_flags(0x08000000).arg("/c").arg("start").arg(&tt.cell_value(ress, 3)).status().expect("Command");
                 // webbrowser::open(&tt.cell_value(ress, 3)).unwrap();
@@ -333,6 +338,11 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
                     tt.set_cell_value(i, 4, "");
                 }
                 redraw();
+                if app::event_mouse_button() == app::MouseButton::Right {
+                    println!("click right Mouse button");
+                    let ress = tr.callback_row();
+                    webbrowser::open(&tt.cell_value(ress, 3)).unwrap()
+                }
             }
 
             true
@@ -385,6 +395,7 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
         tt.set_col_width(2, tt.width() - tt.col_width(0) - tt.col_width(1));
         tt.set_col_width(3, 0);
         tt.set_col_width(4, 0);
+        // tt.set_col_header_height((tt.height() as f32 * 0.04) as i32);
     });
 }
 
@@ -412,7 +423,7 @@ pub fn draw_data(
 ) {
     draw::push_clip(x, y, w, h);
     if selected || is_found {
-        draw::set_draw_color(Color::from_u32(0x00D3_D3D3));
+        draw::set_draw_color(Color::from_rgb(201, 227, 251));
     } else {
         draw::set_draw_color(Color::from_rgb(246, 251, 255));
     }
