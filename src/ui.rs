@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::sync::mpsc::Sender;
 // use std::os::windows::process::CommandExt;
 // use std::process::Command;
 use crate::html::get_content;
@@ -28,6 +29,7 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
             for e in content.iter() {
                 buf.append(e);
             }
+            buf.line_start(0);
 
             let mut win = window::Window::default()
                 .with_size(width, height)
@@ -140,6 +142,17 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
                     if images_exist {
                         win_tmp.end();
                         win_tmp.show();
+                        //确保双击图片可以用浏览器打开网页
+                        let uurl = url.clone();
+                        win_tmp.handle(move |_, event| match event {
+                            Event::Released => {
+                                if app::event_clicks_num() == 1 {
+                                    webbrowser::open(&uurl).unwrap()
+                                }
+                                true
+                            }
+                            _ => false,
+                        });
                         vector_win_tmp.push(win_tmp.clone());
                     }
                 }
@@ -201,33 +214,52 @@ pub fn add_menu(
     menubar: &mut MenuBar,
     table: &mut SmartTable,
     vector: &RefCell<Vec<Item>>,
+    sender_keywords: Sender<String>,
 ) {
-    menubar.add_choice("@fileopen |@search |@-> ");
+    menubar.add_choice("关于 |搜索 |过滤 |退出 ");
     let windx = menubar.width() + wind.x_root();
     let windy = menubar.height() + wind.y_root();
     let vv = RefCell::clone(vector);
     let mut tt = table.clone();
+    let mut last_keywords = String::from(""); //记住上次设置的关键字
     menubar.set_callback(move |c| {
         if let Some(choice) = c.choice() {
             match choice.as_str() {
-                "@fileopen " => {
-                    dialog::message_title("OA About");
+                "过滤 " => {
+                    dialog::message_title("OA Notifier 过滤");
+                    match dialog::input_default("输入要过滤的内容，用空格隔开:", last_keywords.as_str()) {
+                        Some(code) => {
+                            // println!("{}", code);
+                            last_keywords = code.clone(); //更新关键字
+                            sender_keywords.send(code).unwrap();
+
+                            // 发送刚才输入的关键字
+                        }
+                        None => {}
+                    }
+                }
+                "关于 " => {
+                    dialog::message_title("OA Notifier 关于");
                     dialog::message(windx, windy, "使用本软件即同意以下内容:
+                                    本软件当前版本号为1.3.0。
                                     本软件用于自动提醒吉大OA更新内容。
                                     双击点开信息，支持搜索。
-                                    本软件当前版本号为1.2.0。
+                                    双击内容页可在浏览器中打开该网页。
                                     本软件每隔十分钟爬取oa网站前三页的内容。
                                     本软件承诺保护用户隐私，不收集任何信息。
                                     本软件著作权及其解释权归作者镇路晗所有。
+                                    项目源代码及最新版在网站[https://github.com/luhanzhen/OA_Notifier]上。
+                                    有建议或者其它需求建议可以给我留言。
                                     个人用户享有使用权，作者不对使用者造成的后果负责。
-                                    本软件仅供个人使用，不得随意传播，不可用于商业盈利目的或者非法目的。
-                                    请主动遵守国家法律法规和学校的有关规定，非法或者违规行为造成的后果和法律责任自负。");
+                                    本软件仅供个人使用，不可用于商业盈利目的或者非法目的。
+                                    请主动遵守国家法律法规和学校的有关规定，非法或者违规行为造成的法律责任和后果自负。");
                 }
-                "@search " => {
+                "搜索 " => {
                     for i in 0..tt.rows()
                     {
                         tt.set_cell_value(i, 4, "");
                     }
+                    dialog::message_title("OA Notifier 搜索");
                     match dialog::input_default("输入要查找的内容:", "") {
                         Some(code) => {
                             if !code.is_empty() {
@@ -249,7 +281,7 @@ pub fn add_menu(
                         None => {}
                     }
                 }
-                "@-> " => {
+                "退出 " => {
                     // println!("Quitting");
                     app::quit();
                 }

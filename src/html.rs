@@ -54,15 +54,7 @@ pub fn get_content(url: &str) -> Option<(Vec<String>, Vec<String>)> {
             for e in sub_document.tree {
                 if e.is_text() {
                     let text = e.as_text().unwrap().text.to_string();
-                    // let ele = e.as_element().unwrap();
-                    // println!("{:#}:{}",e.as_element().unwrap(), text);
-
-                    // text = text.replace("\n", "");
-                    // text = text.replace("\t", "");
-                    // if !text.is_empty() {
-                    // println!("{:#}", text);
                     strings.push(text);
-                    // }
                 }
             }
 

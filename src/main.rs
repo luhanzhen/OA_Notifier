@@ -7,8 +7,10 @@ use fltk::{prelude::*, *};
 use fltk_table::{SmartTable, TableOpts};
 use notify_rust::Notification;
 use std::cell::{Ref, RefCell};
+use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
+use std::sync::mpsc;
 
 extern crate chrono;
 extern crate timer;
@@ -31,8 +33,6 @@ use ui::*;
 
 fn main() {
     let screens = Screen::all_screens();
-    // println!("{} - {}", screens[0].w(), screens[0].h());
-    // println!("{} - {}", screens[1].w(), screens[1].h());
 
     let init_width: i32 = (screens[0].w() as f32 * 0.618) as i32;
     let init_height: i32 = (screens[0].h() as f32 * 0.618) as i32;
@@ -78,7 +78,15 @@ fn main() {
             ..Default::default()
         });
 
-    add_menu(&mut wind, &mut menubar, &mut table, &vector);
+    let (sender_keywords, receiver_keywords) = mpsc::channel();
+
+    add_menu(
+        &mut wind,
+        &mut menubar,
+        &mut table,
+        &vector,
+        sender_keywords,
+    );
 
     add_table(&mut table, &mut wind, &mut vector);
 
@@ -98,11 +106,17 @@ fn main() {
     });
 
     let timer = timer::Timer::new();
+    let mut keywords = String::from("");
     let _guard = {
         // let count = count.clone();
-        timer.schedule_repeating(chrono::Duration::seconds(600), move || {
-            // println!("hello world");
+        timer.schedule_repeating(chrono::Duration::seconds(60), move || {
             let mut now: RefCell<Vec<Item>> = RefCell::new(vec![]);
+            match receiver_keywords.try_recv() {
+                Ok(keyword) => {
+                    keywords = keyword;
+                }
+                Err(_) => {}
+            }
             match get_html(&mut now) {
                 Some(_) => {}
                 None => {
@@ -112,35 +126,90 @@ fn main() {
             if now.borrow().len() != table.rows() as usize {
                 return;
             }
-            let changed = |table: &mut SmartTable, curr: &Ref<Vec<Item>>| -> String {
-                let mut title = String::from("");
+            let changed = |table: &mut SmartTable, curr: &Ref<Vec<Item>>| -> Vec<Item> {
+                let mut new_items = vec![];
                 if curr.is_empty() {
-                    return title;
+                    return new_items;
                 } else {
-                    for i in 0..curr.len() {
+                    let mut set: HashSet<String> = HashSet::new();
+                    for i in 0..table.rows() {
                         let other = table.cell_value(i as i32, 0).replace("[置顶]", "");
-                        if !curr[i].title.eq(&other) {
-                            title = curr[i].title.clone();
-                            return title;
+                        set.insert(other);
+                    }
+                    for i in 0..curr.len() {
+                        if !set.contains(curr[i].title.as_str()) {
+                            new_items.push(curr[i].clone());
                         }
                     }
-                    return title;
+                    return new_items;
                 }
             };
-            let title = changed(&mut table, &now.borrow());
-            if !title.is_empty() {
-                // println!("改变了");
-                match Notification::new()
-                    .appname("OA Notifier")
-                    .subtitle("OA 更新")
-                    .body(title.as_str())
-                    .icon("firefox")
-                    .show()
+
+            let filter = |new_items: Vec<Item>, keyword: String| -> Vec<Item> {
+                if keyword.is_empty()
+                //没有关键字 就什么都不做。
                 {
-                    Ok(_) => println!("Notification successfully"),
-                    Err(_) => println!("Notification error"),
+                    return new_items;
+                }
+                let keys: Vec<&str> = keyword.split(" ").collect();
+                for k in keys.iter() {
+                    println!("keywords: {:?}", k);
+                }
+                let mut filtered: Vec<Item> = vec![];
+                for item in new_items {
+                    let content: Vec<String>;
+                    match get_content(item.href.as_str()) {
+                        Some((con, _)) => {
+                            content = con;
+                        }
+                        None => {
+                            content = Vec::new();
+                        }
+                    }
+                    let mut found = false;
+                    for key in keys.iter() {
+                        if item.title.as_str().contains(key)
+                            || item.source.contains(key)
+                            || item.time.contains(key)
+                        {
+                            found = true;
+                        }
+                        for line in content.iter() {
+                            if line.contains(key) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if found {
+                            break;
+                        }
+                    }
+                    if found {
+                        filtered.push(item.clone());
+                    }
+                }
+                return filtered;
+            };
+            let new_items = changed(&mut table, &now.borrow());
+            let filtered = filter(new_items, keywords.clone());
+
+            if !filtered.is_empty() {
+                // println!("改变了");
+                for title in filtered {
+                    println!("{}", title.title);
+                    match Notification::new()
+                        .appname("OA Notifier")
+                        .subtitle("OA 更新")
+                        .body(title.title.as_str())
+                        .icon("firefox")
+                        .show()
+                    {
+                        Ok(_) => println!("Notification successfully"),
+                        Err(_) => println!("Notification error"),
+                    }
                 }
             }
+            // 更新表
             for i in 0..now.borrow().len() {
                 if now.borrow()[i as usize].is_top {
                     table.set_label_font(enums::Font::Helvetica);
