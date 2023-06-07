@@ -339,7 +339,7 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
                 }
                 redraw();
                 if app::event_mouse_button() == app::MouseButton::Right {
-                    println!("click right Mouse button");
+                    // println!("click right Mouse button");
                     let ress = tr.callback_row();
                     webbrowser::open(&tt.cell_value(ress, 3)).unwrap()
                 }

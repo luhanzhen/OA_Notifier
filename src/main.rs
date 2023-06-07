@@ -140,7 +140,7 @@ fn main() {
                     for i in 0..curr.len() {
                         if !set.contains(curr[i].title.as_str()) {
                             new_items.push(curr[i].clone());
-                            println!("新通知：{}", curr[i].title)
+                            // println!("新通知：{}", curr[i].title)
                         }
                     }
                 }
@@ -154,9 +154,9 @@ fn main() {
                 {
                     return new_items;
                 }
-                for k in keys.iter() {
-                    println!("keywords: {:?}", k);
-                }
+                // for k in keys.iter() {
+                //     println!("keywords: {:?}", k);
+                // }
                 let mut filtered: Vec<Item> = vec![];
                 for item in new_items {
                     let content: Vec<String>;
@@ -201,7 +201,7 @@ fn main() {
             if !filtered.is_empty() {
                 // println!("改变了");
                 for title in filtered {
-                    println!("{}", title.title);
+                    // println!("{}", title.title);
                     match Notification::new()
                         .appname("OA Notifier⚠️⚠️⚠️")
                         .subtitle(title.source.as_str())
@@ -209,9 +209,11 @@ fn main() {
                         .show()
                     {
                         Ok(_) => {
-                            println!("Notification successfully");
+                            // println!("Notification successfully");
                         }
-                        Err(_) => println!("Notification error"),
+                        Err(_) => {
+                            // println!("Notification error");
+                        }
                     }
                 }
             }
