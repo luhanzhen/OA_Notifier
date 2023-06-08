@@ -39,8 +39,9 @@ pub fn get_content(url: &str) -> Option<(Vec<String>, Vec<String>)> {
             // println!("{}", doc);
             doc = doc.replace("<br>", "\n");
             doc = doc.replace("</p>", "</p>\n");
+            // doc = doc.replace("<span", "  <span");
             let s = String::from('\u{2002}');
-            doc = doc.replace(&s, " ");
+            doc = doc.replace(&s, "  ");
 
             let sub_document = scraper::Html::parse_document(&doc);
             let mut imges = vec![];
@@ -65,9 +66,10 @@ pub fn get_content(url: &str) -> Option<(Vec<String>, Vec<String>)> {
     return None;
 }
 
-fn get_page(url: &str, vec: &mut Box<Vec<Item>>) -> Option<bool> {
+fn get_title_page(url: String) -> Option<Box<Vec<Item>>> {
     // let pre = String::from("https://oa.jlu.edu.cn/defaultroot/");
     let pre = "https://oa.jlu.edu.cn/defaultroot/";
+    let mut vec: Box<Vec<Item>> = Box::new(Vec::new());
     match reqwest::blocking::get(url) {
         Ok(webpage) => {
             let response = webpage.text().unwrap();
@@ -84,7 +86,7 @@ fn get_page(url: &str, vec: &mut Box<Vec<Item>>) -> Option<bool> {
             for element in document.select(&title_selector) {
                 // element.select(&a_font14_selector);
                 let first_element = element.select(&a_font14_selector).next().unwrap();
-                let mut title = first_element.inner_html().replace("&nbsp;&nbsp;", "");
+                let mut title = first_element.inner_html().replace("&nbsp;", "");
                 let mut is_top = false;
                 if title.contains("red") {
                     is_top = true;
@@ -102,7 +104,7 @@ fn get_page(url: &str, vec: &mut Box<Vec<Item>>) -> Option<bool> {
                     .next()
                     .unwrap()
                     .inner_html()
-                    .replace("&nbsp;&nbsp;", "");
+                    .replace("&nbsp;", "");
                 // println!("{}: {}:{}:{}:{}", is_top,title, href, source,time);
                 let a = Item {
                     title,
@@ -113,7 +115,7 @@ fn get_page(url: &str, vec: &mut Box<Vec<Item>>) -> Option<bool> {
                 };
                 vec.push(a);
             }
-            return Some(true);
+            return Some(vec);
         }
         Err(_) => {
             return None;
@@ -122,73 +124,48 @@ fn get_page(url: &str, vec: &mut Box<Vec<Item>>) -> Option<bool> {
 }
 
 pub fn get_table(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Item>>> {
-    let url1 = "https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage=1";
-    let url2 = "https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage=2";
-    let url3 = "https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage=3";
+    const PAGES: i32 = 10;
+    let mut url = vec![];
+    for i in 0..PAGES {
+        let u = format!("https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage={}", i + 1);
+        url.push(u);
+    }
+    let mut tx = vec![];
+    let mut rx = vec![];
+    for _ in 0..url.len() {
+        let (tx1, rx1) = mpsc::channel();
+        tx.push(tx1);
+        rx.push(rx1);
+    }
 
-    let mut vec_1: Box<Vec<Item>> = Box::new(vec![]);
-    let mut vec_2: Box<Vec<Item>> = Box::new(vec![]);
-    let mut vec_3: Box<Vec<Item>> = Box::new(vec![]);
-    let (tx1, rx1) = mpsc::channel();
-    let (tx2, rx2) = mpsc::channel();
-    let (tx3, rx3) = mpsc::channel();
-
-    let t1 = thread::spawn(move || {
-        match get_page(url1, &mut vec_1) {
-            Some(_) => {}
+    let mut thread = vec![];
+    for i in 0..url.len() {
+        let tt = tx[i].clone();
+        let uu = url[i].clone();
+        let t = thread::spawn(move || match get_title_page(uu) {
+            Some(vec) => {
+                tt.send(vec).unwrap();
+            }
             None => {
                 return;
             }
-        }
-        tx1.send(vec_1).unwrap();
-    });
-    let t2 = thread::spawn(move || {
-        match get_page(url2, &mut vec_2) {
-            Some(_) => {}
-            None => {
-                return;
-            }
-        }
-        tx2.send(vec_2).unwrap();
-    });
-    let t3 = thread::spawn(move || {
-        match get_page(url3, &mut vec_3) {
-            Some(_) => {}
-            None => {
-                return;
-            }
-        }
-        tx3.send(vec_3).unwrap();
-    });
-
-    t1.join().unwrap();
-    t2.join().unwrap();
-    t3.join().unwrap();
-
-    vec_1 = rx1.recv().unwrap();
-    vec_2 = rx2.recv().unwrap();
-    vec_3 = rx3.recv().unwrap();
-
-    if vec_1.len() != 30 && vec_2.len() != 30 && vec_3.len() != 30 {
-        return None;
+        });
+        thread.push(t);
+    }
+    for th in thread {
+        th.join().unwrap();
     }
 
     vector.borrow_mut().clear();
-
-    for e in vec_1.iter() {
-        // println!("{:#?}", e);
-        let ee = e.clone();
-        vector.borrow_mut().push(ee);
-    }
-    for e in vec_2.iter() {
-        // println!("{:#?}", e);
-        let ee = e.clone();
-        vector.borrow_mut().push(ee);
-    }
-    for e in vec_3.iter() {
-        // println!("{:#?}", e);
-        let ee = e.clone();
-        vector.borrow_mut().push(ee);
+    for r in rx.iter() {
+        let v = r.recv().unwrap();
+        if v.len() != 30 {
+            return None;
+        }
+        for e in v.iter() {
+            let ee = e.clone();
+            vector.borrow_mut().push(ee);
+        }
     }
     Some(vector)
 }

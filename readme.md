@@ -1,7 +1,7 @@
 
 # 😀 😁 This is an app for the JLU OA notification.
 
->每十分钟读取[OA](https://oa.jlu.edu.cn/defaultroot/login.jsp?access=oa)上的前三页。
+>每十分钟读取[OA](https://oa.jlu.edu.cn/defaultroot/login.jsp?access=oa)上的前若干页。
 >虽然是爬虫，但是不会给OA服务器带来巨大的压力。
 >注意一定要在能访问OA的环境下使用。
 
@@ -20,7 +20,7 @@
 * 支持过滤关键信息，过滤可以是多个关键字，关键字之间必须用空格隔开。
 * 无关键字的情况下，会通知全部信息。
 * 内容页支持图片显示，附件下载目前尚未支持，双击内容页或者图片也可以在浏览器中打开网页。
-* 本软件每隔十分钟爬取oa网站前三页的内容。
+* 本软件每隔十分钟爬取oa网站前若干页的内容。
 * 本软件承诺保护用户隐私，不收集任何信息。
 * 本软件著作权及其解释权归作者镇路晗所有。
 * 项目源代码及最新版在该[网站](https://github.com/luhanzhen/OA_Notifier)上。

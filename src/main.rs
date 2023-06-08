@@ -43,7 +43,7 @@ fn main() {
         Some(_) => {}
         None => {
             if vector.borrow().is_empty() {
-                for _ in 0..90 {
+                for _ in 0..10 {
                     let item = Item {
                         title: String::from("不能访问OA，网络不可用"),
                         time: String::from("。"),
