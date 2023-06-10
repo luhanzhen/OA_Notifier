@@ -55,6 +55,7 @@ pub fn get_content(url: &str) -> Option<(Vec<String>, Vec<String>)> {
             for e in sub_document.tree {
                 if e.is_text() {
                     let text = e.as_text().unwrap().text.to_string();
+                    // text = format!("  {}", text);
                     strings.push(text);
                 }
             }
@@ -166,6 +167,7 @@ pub fn get_table(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Ite
             let ee = e.clone();
             vector.borrow_mut().push(ee);
         }
+        drop(v);
     }
     Some(vector)
 }
