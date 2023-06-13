@@ -284,8 +284,7 @@ fn main() {
                 app.quit();
             }
             if event.id == about_i.id() {
-                if !wind.visible()
-                {
+                if !wind.visible() {
                     wind.platform_show();
                 }
                 dialog::message_title("OA Notifier 关于");
