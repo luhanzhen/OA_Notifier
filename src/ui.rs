@@ -2,8 +2,8 @@ use std::cell::RefCell;
 use std::sync::mpsc::Sender;
 // use std::os::windows::process::CommandExt;
 // use std::process::Command;
-use crate::html::get_content;
-use crate::item::Item;
+use crate::html::{get_content, get_update};
+use crate::item::{Item, VERSION};
 use fltk::app::redraw;
 use fltk::enums::{Color, Event, FrameType};
 use fltk::frame::Frame;
@@ -21,6 +21,27 @@ use webbrowser;
  * <p>@time: 13:34<p/>
  * <p>@this_file_name:ui<p/>
  */
+
+pub fn check_update()
+{
+    match get_update()
+    {
+        Some(new_version) =>
+            {
+                let pat = "(?<=@@).*?(?=@@)";
+                let result : Vec<_>= new_version.matches(pat).collect();
+                println!("{:?}", result);
+                if new_version.contains(VERSION)
+                {
+                    println!("存在最新版。");
+                }else {
+                    println!("已经是最新版。");
+                }
+            }
+        None =>
+            {}
+    }
+}
 
 fn show_content(url: &String, title: &String, width: i32, height: i32) {
     match get_content(url) {
@@ -212,8 +233,7 @@ pub fn add_menu(
     table: &mut SmartTable,
     sender_keywords: Sender<String>,
 ) {
-    menubar.add_choice("搜索  |过滤  ");
-
+    menubar.add_choice("搜索  |过滤  |检查更新 ");
     let windx = wind.x_root();
     let windy = wind.y_root();
     let mut tt = table.clone();
@@ -221,6 +241,10 @@ pub fn add_menu(
     menubar.set_callback(move |c| {
         if let Some(choice) = c.choice() {
             match choice.as_str() {
+                "检查更新 " =>
+                    {
+                        check_update();
+                    }
                 "过滤  " => {
                     dialog::message_title("OA Notifier 过滤");
                     match dialog::input(
@@ -403,13 +427,22 @@ pub fn draw_data(
         draw::set_draw_color(Color::from_rgb(246, 251, 255));
     }
     draw::draw_rectf(x, y, w, h);
-    draw::set_draw_color(Color::Gray0);
+
+
     if is_top {
         draw::set_font(enums::Font::TimesBold, 15);
     } else {
         draw::set_font(enums::Font::Times, 14);
     }
+    if txt.contains("今天")
+    {
+        draw::set_draw_color(Color::from_rgb(0, 128, 0));
+    } else {
+        draw::set_draw_color(Color::Black);
+    }
+    // draw::set_draw_color()
     draw::draw_text2(txt, x, y, w, h, enums::Align::Center);
+    draw::set_draw_color(Color::Black);
     draw::draw_rect(x, y, w, h);
     draw::pop_clip();
 }

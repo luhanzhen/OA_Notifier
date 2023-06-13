@@ -173,3 +173,35 @@ pub fn get_table(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Ite
 
     Some(vector)
 }
+
+
+pub fn get_update() -> Option<String>
+{
+    return match reqwest::blocking::get("http://192.168.1.100:7788/zhenluhan/OANotifier/raw/branch/version2/Version_File")
+    {
+        Ok(webpage) => {
+            let response = webpage.text().unwrap();
+            if response.is_empty() {
+                return None;
+            }
+            Some(response)
+        }
+        Err(_) =>
+            {
+                match reqwest::blocking::get("http://59.72.109.14:7788/zhenluhan/OANotifier/raw/branch/version2/Version_File")
+                {
+                    Ok(webpage) => {
+                        let response = webpage.text().unwrap();
+                        if response.is_empty() {
+                            return None;
+                        }
+                        Some(response)
+                    }
+                    Err(_) =>
+                        {
+                            None
+                        }
+                }
+            }
+    }
+}

@@ -46,6 +46,7 @@ use crate::item::VERSION;
 
 
 fn main() {
+
     let instance = SingleInstance::new("OANotifier").unwrap();
     if !instance.is_single()
     {
