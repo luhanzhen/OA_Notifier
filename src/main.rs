@@ -116,9 +116,9 @@ fn main() {
                 _win.x() + _win.width() / 3 * 2,
                 _win.y() + 10,
                 "确定要退出吗？",
-                "sorry，点错了。",
-                "隐藏它！",
-                "确实。",
+                "点错了",
+                "隐藏",
+                "确实",
             ) {
                 Some(choice) => {
                     // println!("full screen!!!{choice}");
