@@ -1,10 +1,7 @@
 use crate::item::Item;
 use std::cell::RefCell;
-use std::fmt::format;
 use std::sync::mpsc;
 use std::thread;
-use std::time::{SystemTime, UNIX_EPOCH};
-use chrono::{Local, Timelike};
 
 /**
  * <p> @project_name: OANotifier <p/>
@@ -161,19 +158,6 @@ pub fn get_table(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Ite
     }
 
     vector.borrow_mut().clear();
-
-    let dt = Local::now();
-    let tt = dt.second()%5;
-    for i in 0..tt {
-        vector.borrow_mut().push( Item {
-            title: format!("关于吉林大学的通知{}",i),
-            time: "今天".to_string(),
-            source: "吉林大学".to_string(),
-            href: "www.baidu.com".to_string(),
-            is_top: false,
-        });
-    }
-
 
     for r in rx.iter() {
         let v = r.recv().unwrap();
