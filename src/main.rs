@@ -276,8 +276,6 @@ fn main() {
         let icon = Icon::from_path("./icon.ico", None).unwrap();
         tray.set_icon(Some(icon)).unwrap();
     }
-
-    let tray_channel = TrayEvent::receiver();
     while app.wait() {
         // 处理事件
         if let Ok(event) = MenuEvent::receiver().try_recv() {
@@ -308,7 +306,7 @@ fn main() {
             }
         }
 
-        if let Ok(_) = tray_channel.try_recv() {
+        if let Ok(_) =  TrayEvent::receiver().try_recv() {
             wind.platform_show();
         }
     }
