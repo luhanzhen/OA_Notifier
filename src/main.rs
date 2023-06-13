@@ -8,6 +8,7 @@ use fltk_table::{SmartTable, TableOpts};
 use notify_rust::Notification;
 use std::cell::{Ref, RefCell};
 use std::collections::HashSet;
+
 use std::fs;
 use std::path::Path;
 use std::sync::mpsc;
@@ -24,8 +25,13 @@ use item::Item;
 use tray_icon::menu::{Menu, MenuEvent, MenuItem};
 use tray_icon::{icon::Icon, TrayEvent, TrayIconBuilder};
 use ui::*;
+
 extern crate single_instance;
+
 use single_instance::SingleInstance;
+use crate::item::VERSION;
+
+
 /**
  * <p>@project_name: OANotifier
  * <p/>
@@ -38,8 +44,8 @@ use single_instance::SingleInstance;
  * <p>@this_file_name:main
  */
 
-fn main() {
 
+fn main() {
     let instance = SingleInstance::new("OANotifier").unwrap();
     if !instance.is_single()
     {
@@ -109,9 +115,9 @@ fn main() {
                 _win.x() + _win.width() / 3 * 2,
                 _win.y() + 10,
                 "确定要退出吗？",
-                "否",
-                "隐藏",
-                "是",
+                "sorry，点错了。",
+                "隐藏它！",
+                "确实。",
             ) {
                 Some(choice) => {
                     // println!("full screen!!!{choice}");
@@ -286,8 +292,8 @@ fn main() {
                     wind.platform_show();
                 }
                 dialog::message_title("OA Notifier 关于");
-                dialog::message(init_width / 2, init_height / 2, "使用本软件即同意以下内容:
-                                    本软件当前版本号为1.4.0。
+                let message = format!("使用本软件即同意以下内容:
+                                    本软件当前版本号为{}。
                                     本软件用于自动提醒吉林大学OA更新内容。
                                     双击表格点开信息，右击表格在浏览器中打开网页。
                                     支持搜索，但是搜索不能查找内容，原因是考虑到搜索的快速响应。
@@ -302,7 +308,8 @@ fn main() {
                                     有好的建议或者其它需求可以给我留言。
                                     个人用户享有使用权，作者不对使用者造成的后果负责。
                                     本软件仅供个人使用，不可用于商业盈利目的或者非法目的。
-                                    请主动遵守国家法律法规和学校的有关规定，非法或者违规行为造成的法律责任和后果自负。");
+                                    请主动遵守国家法律法规和学校的有关规定，非法或者违规行为造成的法律责任和后果自负。", VERSION);
+                dialog::message(init_width / 2, init_height / 2, message.as_str());
             }
         }
 

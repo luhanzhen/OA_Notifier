@@ -14,3 +14,6 @@ pub struct Item {
     pub href: String,   //链接
     pub is_top: bool,   //是否是置顶的内容
 }
+
+
+pub const VERSION: &'static str = "1.4.0";

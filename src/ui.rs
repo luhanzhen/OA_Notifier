@@ -213,6 +213,7 @@ pub fn add_menu(
     sender_keywords: Sender<String>,
 ) {
     menubar.add_choice("搜索  |过滤  ");
+
     let windx = wind.x_root();
     let windy = wind.y_root();
     let mut tt = table.clone();
