@@ -24,7 +24,8 @@ use item::Item;
 use tray_icon::menu::{Menu, MenuEvent, MenuItem};
 use tray_icon::{icon::Icon, TrayEvent, TrayIconBuilder};
 use ui::*;
-
+extern crate single_instance;
+use single_instance::SingleInstance;
 /**
  * <p>@project_name: OANotifier
  * <p/>
@@ -38,6 +39,12 @@ use ui::*;
  */
 
 fn main() {
+
+    let instance = SingleInstance::new("whatever").unwrap();
+    if !instance.is_single()
+    {
+        return;
+    }
     let screens = Screen::all_screens();
 
     let init_width: i32 = (screens[0].w() as f32 * 0.618) as i32;
