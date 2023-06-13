@@ -28,8 +28,8 @@ pub fn check_update()
     {
         Some(new_version) =>
             {
-                let pat = "(?<=@@).*?(?=@@)";
-                let result : Vec<_>= new_version.matches(pat).collect();
+                let pat = "(?<=http)(.*?)(?=OA)";
+                let result : Vec<_>= new_version.match_indices(pat).collect();
                 println!("{new_version}:  {:?}", result);
                 if new_version.contains(VERSION)
                 {
