@@ -9,8 +9,10 @@ use notify_rust::Notification;
 use std::cell::{Ref, RefCell};
 use std::collections::HashSet;
 use std::fs;
+use std::ops::DerefMut;
 use std::path::Path;
-use std::sync::mpsc;
+use std::rc::Rc;
+use std::sync::{Arc, mpsc, Mutex};
 
 extern crate chrono;
 extern crate timer;
@@ -63,7 +65,7 @@ fn main() {
         }
     };
 
-    let app = app::App::default().with_scheme(app::Scheme::Gtk);
+    let app = app::App::default().with_scheme(app::Scheme::Oxy);
 
     let mut wind = Window::default()
         .with_size(init_width, init_height)
@@ -74,27 +76,21 @@ fn main() {
         wind.set_icon(Some(icon));
     }
     let mut menubar = menu::MenuBar::new(0, 0, init_width, 25, "");
-    let mut table = SmartTable::default()
+    let ori_table = SmartTable::default()
         .with_size(wind.width() - 2, wind.height() - 25)
         .with_pos(0, 25)
         .with_opts(TableOpts {
-            rows: vector.borrow().len() as i32,
+            rows: vector.borrow().len() as i32 + 5,
             cols: 5,
             editable: true,
             ..Default::default()
         });
-
+    let mut rc_table: Rc::<SmartTable> = Rc::new(ori_table);
     let (sender_keywords, receiver_keywords) = mpsc::channel();
 
-    add_menu(
-        &mut wind,
-        &mut menubar,
-        &mut table,
-        &vector,
-        sender_keywords,
-    );
+    add_menu(&mut wind, &mut menubar, &mut rc_table, &vector, sender_keywords);
 
-    add_table(&mut table, &mut wind, &mut vector);
+    add_table(&mut rc_table, &mut wind, &mut vector);
 
     wind.end();
     wind.show();
@@ -132,10 +128,12 @@ fn main() {
     let timer = timer::Timer::new();
     let mut keywords = String::from("");
 
+    let mut boxx_table = Arc::new(Mutex::new(rc_table));
     let _guard = {
         // let count = count.clone();
+        //
 
-        timer.schedule_repeating(chrono::Duration::seconds(600), move || {
+        timer.schedule_repeating(chrono::Duration::seconds(10), move || {
             let mut now: RefCell<Vec<Item>> = RefCell::new(vec![]);
             match receiver_keywords.try_recv() {
                 Ok(keyword) => {
@@ -143,6 +141,7 @@ fn main() {
                 }
                 Err(_) => {}
             }
+            let mut boxy_table = boxx_table.lock().unwrap();
 
             match get_table(&mut now) {
                 Some(_) => {}
@@ -150,10 +149,9 @@ fn main() {
                     return;
                 }
             }
-            // if now.borrow().len() != table.rows() as usize {
-            //     return;
-            // }
-            let changed = |table: &mut SmartTable, curr: &Ref<Vec<Item>>| -> Vec<Item> {
+
+
+            let changed = |table: &mut Rc<SmartTable>, curr: &Ref<Vec<Item>>| -> Vec<Item> {
                 let mut new_items = vec![];
                 if !curr.is_empty() {
                     let mut set: HashSet<String> = HashSet::new();
@@ -178,9 +176,7 @@ fn main() {
                 {
                     return new_items;
                 }
-                // for k in keys.iter() {
-                //     println!("keywords: {:?}", k);
-                // }
+
                 let mut filtered: Vec<Item> = vec![];
                 for item in new_items {
                     let content: Vec<String>;
@@ -219,7 +215,7 @@ fn main() {
                 }
                 return filtered;
             };
-            let new_items = changed(&mut table, &now.borrow());
+            let new_items = changed(&mut boxy_table, &now.borrow());
             let filtered = filter(new_items, keywords.clone());
 
             if !filtered.is_empty() {
@@ -229,7 +225,7 @@ fn main() {
                         .appname("OA Notifier")
                         .subtitle(title.source.as_str())
                         .body(title.title.as_str())
-                        .auto_icon()
+                        .icon("edge")
                         .show()
                     {
                         Ok(_) => {
@@ -244,21 +240,21 @@ fn main() {
             // 更新表
             for i in 0..now.borrow().len() {
                 if now.borrow()[i as usize].is_top {
-                    table.set_label_font(enums::Font::Helvetica);
-                    table.set_cell_value(
+                    boxy_table.set_label_font(enums::Font::Helvetica);
+                    boxy_table.set_cell_value(
                         i as i32,
                         0,
                         &format!("[置顶]{}", &now.borrow()[i as usize].title),
                     );
                 } else {
-                    table.set_label_font(enums::Font::Times);
-                    table.set_cell_value(i as i32, 0, &now.borrow()[i as usize].title);
+                    boxy_table.set_label_font(enums::Font::Times);
+                    boxy_table.set_cell_value(i as i32, 0, &now.borrow()[i as usize].title);
                 }
-                table.set_cell_value(i as i32, 1, &now.borrow()[i as usize].source);
-                table.set_cell_value(i as i32, 2, &now.borrow()[i as usize].time);
-                table.set_cell_value(i as i32, 3, &now.borrow()[i as usize].href);
+                boxy_table.set_cell_value(i as i32, 1, &now.borrow()[i as usize].source);
+                boxy_table.set_cell_value(i as i32, 2, &now.borrow()[i as usize].time);
+                boxy_table.set_cell_value(i as i32, 3, &now.borrow()[i as usize].href);
             }
-            table.redraw();
+            boxy_table.redraw();
             drop(now);
         })
     };
@@ -281,6 +277,7 @@ fn main() {
         // 处理托盘事件
         if let Ok(event) = MenuEvent::receiver().try_recv() {
             if event.id == quit_i.id() {
+                wind.hide();
                 app.quit();
             }
             if event.id == about_i.id() {

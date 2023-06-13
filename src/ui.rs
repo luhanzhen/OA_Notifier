@@ -1,7 +1,6 @@
 use std::cell::RefCell;
+use std::rc::Rc;
 use std::sync::mpsc::Sender;
-// use std::os::windows::process::CommandExt;
-// use std::process::Command;
 use crate::html::get_content;
 use crate::item::Item;
 use fltk::app::redraw;
@@ -209,7 +208,7 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
 pub fn add_menu(
     wind: &mut DoubleWindow,
     menubar: &mut MenuBar,
-    table: &mut SmartTable,
+    table: &mut Rc<SmartTable>,
     vector: &RefCell<Vec<Item>>,
     sender_keywords: Sender<String>,
 ) {
@@ -217,7 +216,7 @@ pub fn add_menu(
     let windx = wind.x_root();
     let windy = wind.y_root();
     let vv = RefCell::clone(vector);
-    let mut tt = table.clone();
+    let mut tt = Rc::clone(&table);
     let mut last_keywords = String::from(""); //记住上次设置的关键字
     menubar.set_callback(move |c| {
         if let Some(choice) = c.choice() {
@@ -273,7 +272,8 @@ pub fn add_menu(
     });
 }
 
-pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut RefCell<Vec<Item>>) {
+pub fn add_table(table: &mut Rc<SmartTable>, wind: &mut DoubleWindow, vector: &mut RefCell<Vec<Item>>) {
+
     table.set_row_resize(true);
     table.set_col_resize(true);
     table.set_col_header(true);
