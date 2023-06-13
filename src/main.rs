@@ -285,6 +285,10 @@ fn main() {
             }
             if event.id == about_i.id() {
                 // println!("about_i {event:?}");
+                if !wind.visible()
+                {
+                    wind.platform_show();
+                }
                 dialog::message_title("OA Notifier 关于");
                 dialog::message(init_width / 2, init_height / 2, "使用本软件即同意以下内容:
                                     本软件当前版本号为1.4.0。
@@ -306,7 +310,7 @@ fn main() {
             }
         }
 
-        if let Ok(_) =  TrayEvent::receiver().try_recv() {
+        if let Ok(_) = TrayEvent::receiver().try_recv() {
             wind.platform_show();
         }
     }
