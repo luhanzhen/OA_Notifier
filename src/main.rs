@@ -40,7 +40,7 @@ use single_instance::SingleInstance;
 
 fn main() {
 
-    let instance = SingleInstance::new("whatever").unwrap();
+    let instance = SingleInstance::new("OANotifier").unwrap();
     if !instance.is_single()
     {
         return;
@@ -70,7 +70,7 @@ fn main() {
         }
     };
 
-    let app = app::App::default().with_scheme(app::Scheme::Gtk);
+    let app = app::App::default().with_scheme(app::Scheme::Oxy);
 
     let mut wind = Window::default()
         .with_size(init_width, init_height)
