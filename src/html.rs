@@ -177,7 +177,7 @@ pub fn get_table(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Ite
 
 pub fn get_update() -> Option<String>
 {
-    return match reqwest::blocking::get("http://192.168.1.100:7788/zhenluhan/OANotifier/raw/branch/version2/Version_File")
+    return match reqwest::blocking::get("http://192.168.1.100:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file")
     {
         Ok(webpage) => {
             let response = webpage.text().unwrap();
@@ -188,7 +188,7 @@ pub fn get_update() -> Option<String>
         }
         Err(_) =>
             {
-                match reqwest::blocking::get("http://59.72.109.14:7788/zhenluhan/OANotifier/raw/branch/version2/Version_File")
+                match reqwest::blocking::get("http://59.72.109.14:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file")
                 {
                     Ok(webpage) => {
                         let response = webpage.text().unwrap();

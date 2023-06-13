@@ -30,7 +30,7 @@ pub fn check_update()
             {
                 let pat = "(?<=@@).*?(?=@@)";
                 let result : Vec<_>= new_version.matches(pat).collect();
-                println!("{:?}", result);
+                println!("{new_version}:  {:?}", result);
                 if new_version.contains(VERSION)
                 {
                     println!("存在最新版。");
