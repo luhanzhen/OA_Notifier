@@ -63,7 +63,7 @@ fn main() {
         }
     };
 
-    let app = app::App::default().with_scheme(app::Scheme::Gleam);
+    let app = app::App::default().with_scheme(app::Scheme::Gtk);
 
     let mut wind = Window::default()
         .with_size(init_width, init_height)
