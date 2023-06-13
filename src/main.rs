@@ -21,6 +21,8 @@ pub mod ui;
 
 use html::*;
 use item::Item;
+use tray_icon::menu::{Menu, MenuEvent, MenuItem};
+use tray_icon::{icon::Icon, TrayEvent, TrayIconBuilder};
 use ui::*;
 
 /**
@@ -34,7 +36,6 @@ use ui::*;
  * <p/>
  * <p>@this_file_name:main
  */
-
 
 fn main() {
     let screens = Screen::all_screens();
@@ -108,13 +109,15 @@ fn main() {
                 _win.y() + 10,
                 "确定要退出吗？",
                 "否",
+                "隐藏",
                 "是",
-                "",
             ) {
                 Some(choice) => {
                     // println!("full screen!!!{choice}");
-                    if choice == 1 {
+                    if choice == 2 {
                         app::quit();
+                    } else if choice == 1 {
+                        _win.platform_hide();
                     }
                 }
                 None => {}
@@ -222,11 +225,11 @@ fn main() {
             if !filtered.is_empty() {
                 // println!("改变了");
                 for title in filtered {
-                    // println!("{}", title.title);
                     match Notification::new()
-                        .appname("OA Notifier⚠️⚠️⚠️")
+                        .appname("OA Notifier")
                         .subtitle(title.source.as_str())
                         .body(title.title.as_str())
+                        .auto_icon()
                         .show()
                     {
                         Ok(_) => {
@@ -259,6 +262,56 @@ fn main() {
             drop(now);
         })
     };
+
+    let tray_menu = Menu::new();
+    let quit_i = MenuItem::new("退出", true, None);
+    let about_i = MenuItem::new("关于", true, None);
+    tray_menu.append_items(&[&about_i, &quit_i]);
+    let mut tray = TrayIconBuilder::new()
+        .with_menu(Box::new(tray_menu))
+        .with_tooltip("OA Notifier")
+        .build()
+        .unwrap();
+    if fs::metadata("./icon.ico").is_ok() {
+        let icon = Icon::from_path("./icon.ico", None).unwrap();
+        tray.set_icon(Some(icon)).unwrap();
+    }
+
+    let tray_channel = TrayEvent::receiver();
+    while app.wait() {
+        // 处理事件
+        if let Ok(event) = MenuEvent::receiver().try_recv() {
+            if event.id == quit_i.id() {
+                // println!("quit_i {event:?}");
+                app.quit();
+            }
+            if event.id == about_i.id() {
+                // println!("about_i {event:?}");
+                dialog::message_title("OA Notifier 关于");
+                dialog::message(init_width / 2, init_height / 2, "使用本软件即同意以下内容:
+                                    本软件当前版本号为1.4.0。
+                                    本软件用于自动提醒吉林大学OA更新内容。
+                                    双击表格点开信息，右击表格在浏览器中打开网页。
+                                    支持搜索，但是搜索不能查找内容，原因是考虑到搜索的快速响应。
+                                    支持过滤关键信息，过滤可以是多个关键字，关键字之间必须用空格隔开。
+                                    无关键字的情况下，会通知全部信息。
+                                    内容页支持图片显示，附件下载目前尚未支持，双击内容页或者图片也可以在浏览器中打开网页。
+                                    支持以托盘方式在桌面右下角显示。
+                                    本软件每隔十分钟爬取oa网站前若干页的内容。
+                                    本软件承诺保护用户隐私，不收集任何信息。
+                                    本软件著作权及其解释权归作者镇路晗所有。
+                                    项目源代码及最新版在网站[https://github.com/luhanzhen/OA_Notifier]上。
+                                    有好的建议或者其它需求可以给我留言。
+                                    个人用户享有使用权，作者不对使用者造成的后果负责。
+                                    本软件仅供个人使用，不可用于商业盈利目的或者非法目的。
+                                    请主动遵守国家法律法规和学校的有关规定，非法或者违规行为造成的法律责任和后果自负。");
+            }
+        }
+
+        if let Ok(_) = tray_channel.try_recv() {
+            wind.platform_show();
+        }
+    }
 
     app.run().unwrap();
     drop(_guard);

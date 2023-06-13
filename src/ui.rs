@@ -213,7 +213,7 @@ pub fn add_menu(
     vector: &RefCell<Vec<Item>>,
     sender_keywords: Sender<String>,
 ) {
-    menubar.add_choice("关于  |搜索  |过滤  ");
+    menubar.add_choice("搜索  |过滤  ");
     let windx = wind.x_root();
     let windy = wind.y_root();
     let vv = RefCell::clone(vector);
@@ -224,53 +224,38 @@ pub fn add_menu(
             match choice.as_str() {
                 "过滤  " => {
                     dialog::message_title("OA Notifier 过滤");
-                    match dialog::input(c.x()+windx,c.y()+windy,"输入要过滤的内容，用空格隔开:", last_keywords.as_str()) {
+                    match dialog::input(
+                        c.x() + windx,
+                        c.y() + windy,
+                        "输入要过滤的内容，用空格隔开:",
+                        last_keywords.as_str(),
+                    ) {
                         Some(code) => {
                             // println!("{}", code);
                             last_keywords = code.clone(); //更新关键字
                             sender_keywords.send(code).unwrap();
-
-
                             // 发送刚才输入的关键字
                         }
                         None => {}
                     }
                 }
-                "关于  " => {
-                    dialog::message_title("OA Notifier 关于");
-                    dialog::message(c.x()+windx,c.y()+windy, "使用本软件即同意以下内容:
-                                    本软件当前版本号为1.3.0。
-                                    本软件用于自动提醒吉林大学OA更新内容。
-                                    双击表格点开信息，右击表格在浏览器中打开网页。
-                                    支持搜索，但是搜索不能查找内容，原因是考虑到搜索的快速响应。
-                                    支持过滤关键信息，过滤可以是多个关键字，关键字之间必须用空格隔开。
-                                    无关键字的情况下，会通知全部信息。
-                                    内容页支持图片显示，附件下载目前尚未支持，双击内容页或者图片也可以在浏览器中打开网页。
-                                    本软件每隔十分钟爬取oa网站前若干页的内容。
-                                    本软件承诺保护用户隐私，不收集任何信息。
-                                    本软件著作权及其解释权归作者镇路晗所有。
-                                    项目源代码及最新版在网站[https://github.com/luhanzhen/OA_Notifier]上。
-                                    有好的建议或者其它需求可以给我留言。
-                                    个人用户享有使用权，作者不对使用者造成的后果负责。
-                                    本软件仅供个人使用，不可用于商业盈利目的或者非法目的。
-                                    请主动遵守国家法律法规和学校的有关规定，非法或者违规行为造成的法律责任和后果自负。");
-                }
                 "搜索  " => {
-                    for i in 0..tt.rows()
-                    {
+                    for i in 0..tt.rows() {
                         tt.set_cell_value(i, 4, "");
                     }
                     dialog::message_title("OA Notifier 搜索");
-                    match dialog::input(c.x()+windx,c.y()+windy,"输入要查找的内容:", "") {
+                    match dialog::input(c.x() + windx, c.y() + windy, "输入要查找的内容:", "")
+                    {
                         Some(code) => {
                             if !code.is_empty() {
                                 // let code = String::from("吉林");
                                 // println!("Finding...{}", code);
                                 tt.set_selection(-1, -1, -1, -1);
-                                for i in 0..vv.borrow().len()
-                                {
+                                for i in 0..vv.borrow().len() {
                                     let t = &vv.borrow()[i];
-                                    if t.title.contains(&code) || t.source.contains(&code) || t.time.contains(&code)
+                                    if t.title.contains(&code)
+                                        || t.source.contains(&code)
+                                        || t.time.contains(&code)
                                     {
                                         // println!("Found == {}", i);
                                         tt.set_cell_value(i as i32, 4, "f");
