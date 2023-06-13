@@ -263,6 +263,7 @@ fn main() {
         })
     };
 
+    // 设置托盘
     let tray_menu = Menu::new();
     let quit_i = MenuItem::new("退出", true, None);
     let about_i = MenuItem::new("关于", true, None);
@@ -277,14 +278,12 @@ fn main() {
         tray.set_icon(Some(icon)).unwrap();
     }
     while app.wait() {
-        // 处理事件
+        // 处理托盘事件
         if let Ok(event) = MenuEvent::receiver().try_recv() {
             if event.id == quit_i.id() {
-                // println!("quit_i {event:?}");
                 app.quit();
             }
             if event.id == about_i.id() {
-                // println!("about_i {event:?}");
                 if !wind.visible()
                 {
                     wind.platform_show();
