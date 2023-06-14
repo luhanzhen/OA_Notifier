@@ -15,5 +15,4 @@ pub struct Item {
     pub is_top: bool,   //是否是置顶的内容
 }
 
-
-pub const VERSION: &'static str = "1.4.0";
+pub const VERSION: &'static str = "1.5.0";

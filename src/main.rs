@@ -9,10 +9,10 @@ use notify_rust::Notification;
 use std::cell::{Ref, RefCell};
 use std::collections::HashSet;
 
+use fltk::enums::Color;
 use std::fs;
 use std::path::Path;
 use std::sync::mpsc;
-use fltk::enums::Color;
 
 extern crate chrono;
 extern crate timer;
@@ -29,9 +29,8 @@ use ui::*;
 
 extern crate single_instance;
 
-use single_instance::SingleInstance;
 use crate::item::VERSION;
-
+use single_instance::SingleInstance;
 
 /**
  * <p>@project_name: OANotifier
@@ -45,12 +44,9 @@ use crate::item::VERSION;
  * <p>@this_file_name:main
  */
 
-
 fn main() {
-
     let instance = SingleInstance::new("OANotifier").unwrap();
-    if !instance.is_single()
-    {
+    if !instance.is_single() {
         return;
     }
     let screens = Screen::all_screens();
@@ -83,7 +79,7 @@ fn main() {
     let mut wind = Window::default()
         .with_size(init_width, init_height)
         .with_label("OA Notifier");
-    wind.set_color( Color::from_rgb(246, 251, 255));
+    wind.set_color(Color::from_rgb(246, 251, 255));
     wind.set_selection_color(Color::from_rgb(246, 251, 255));
     wind.set_label_color(Color::from_rgb(246, 251, 255));
 
@@ -276,7 +272,8 @@ fn main() {
     let tray_menu = Menu::new();
     let quit_i = MenuItem::new("退出", true, None);
     let about_i = MenuItem::new("关于", true, None);
-    tray_menu.append_items(&[&about_i, &quit_i]);
+    let update_i = MenuItem::new("检查更新", true, None);
+    tray_menu.append_items(&[&update_i, &about_i, &quit_i]);
     let mut tray = TrayIconBuilder::new()
         .with_menu(Box::new(tray_menu))
         .with_tooltip("OA Notifier")
@@ -291,6 +288,12 @@ fn main() {
         if let Ok(event) = MenuEvent::receiver().try_recv() {
             if event.id == quit_i.id() {
                 app.quit();
+            }
+            if event.id == update_i.id() {
+                if !wind.visible() {
+                    wind.platform_show();
+                }
+                check_update(init_width / 2, init_height / 2)
             }
             if event.id == about_i.id() {
                 if !wind.visible() {

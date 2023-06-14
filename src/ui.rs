@@ -22,38 +22,48 @@ use webbrowser;
  * <p>@this_file_name:ui<p/>
  */
 
-pub fn check_update()
-{
-    match get_update()
-    {
-        Some(new_version) =>
-            {
-                // let pat = "(?<=http)(.*?)(?=OA)";
-                // let result: Vec<_> = new_version.match_indices(pat).collect();
-                match new_version.find("@@first@@")
-                {
-                    Some(first) => {
-                        match new_version.find("@@second@@")
-                        {
-                            Some(second) => {
-                                let str = &new_version[first..second];
-                                println!("{new_version}:  {:?}", str);
+pub fn check_update(x: i32, y: i32) {
+    dialog::message_title("OA Notifier 更新");
+    match get_update() {
+        Some(new_version) => match new_version.find("@@first@@") {
+            Some(first) => match new_version.find("@@second@@") {
+                Some(second) => {
+                    let str = &new_version[(first + 9)..second];
+                    println!("{new_version}:  {:?}", str);
+                    if str.contains(VERSION) {
+                        // 存在最新版。
+                        dialog::message(x, y, "已经是最新版。");
+                        match dialog::choice2(
+                            x,
+                            y,
+                            "有最新版，你要更新吗？",
+                            "算了",
+                            "在浏览器中下载",
+                            "",
+                        ) {
+                            Some(choice) => {
+                                if choice == 2 {
+                                    webbrowser::open(str).unwrap();
+                                    dialog::message(x, y, "下载最新版，删除现在的软件即可。");
+                                }
                             }
                             None => {}
                         }
+                    } else {
+                        dialog::message(x, y, "当前版本已经是最新版。");
                     }
-                    None => {}
                 }
-
-                if new_version.contains(VERSION)
-                {
-                    println!("存在最新版。");
-                } else {
-                    println!("已经是最新版。");
+                None => {
+                    dialog::message(x, y, "网络好像有点问题。");
                 }
+            },
+            None => {
+                dialog::message(x, y, "网络好像有点问题。");
             }
-        None =>
-            {}
+        },
+        None => {
+            dialog::message(x, y, "网络好像有点问题。");
+        }
     }
 }
 
@@ -241,8 +251,13 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
     }
 }
 
-pub fn add_menu(wind: &mut DoubleWindow, menubar: &mut MenuBar, table: &mut SmartTable, sender_keywords: Sender<String>) {
-    menubar.add_choice("搜索  |过滤  |检查更新 ");
+pub fn add_menu(
+    wind: &mut DoubleWindow,
+    menubar: &mut MenuBar,
+    table: &mut SmartTable,
+    sender_keywords: Sender<String>,
+) {
+    menubar.add_choice("搜索  |过滤  ");
     menubar.set_color(Color::from_rgb(246, 251, 255));
 
     let windx = wind.x_root();
@@ -252,10 +267,6 @@ pub fn add_menu(wind: &mut DoubleWindow, menubar: &mut MenuBar, table: &mut Smar
     menubar.set_callback(move |c| {
         if let Some(choice) = c.choice() {
             match choice.as_str() {
-                "检查更新 " =>
-                    {
-                        check_update();
-                    }
                 "过滤  " => {
                     dialog::message_title("OA Notifier 过滤");
                     match dialog::input(
@@ -315,12 +326,19 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
     // table.set_selection_color(Color::from_rgb(246, 251, 255));
     table.scrollbar().set_color(Color::from_rgb(246, 251, 255));
     table.hscrollbar().set_color(Color::from_rgb(246, 251, 255));
-    table.scrollbar().set_selection_color(Color::from_hex(0xD8DBE2));
-    table.hscrollbar().set_selection_color(Color::from_hex(0xD8DBE2));
+    table
+        .scrollbar()
+        .set_selection_color(Color::from_hex(0xD8D8D8));
+    table
+        .hscrollbar()
+        .set_selection_color(Color::from_hex(0xD8D8D8));
 
     table.set_col_width(0, (table.width() as f32 * 0.67) as i32);
     table.set_col_width(1, (table.width() as f32 * 0.18) as i32);
-    table.set_col_width(2, table.width() - table.col_width(0) - table.col_width(1) - table.scrollbar().width() - 3);
+    table.set_col_width(
+        2,
+        table.width() - table.col_width(0) - table.col_width(1) - table.scrollbar().width() - 3,
+    );
     table.set_col_width(3, 0);
     table.set_col_width(4, 0);
 
@@ -408,7 +426,10 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
     wind.draw(move |_| {
         tt.set_col_width(0, (tt.width() as f32 * 0.67) as i32);
         tt.set_col_width(1, (tt.width() as f32 * 0.18) as i32);
-        tt.set_col_width(2, tt.width() - tt.col_width(0) - tt.col_width(1) - tt.scrollbar().width() - 3);
+        tt.set_col_width(
+            2,
+            tt.width() - tt.col_width(0) - tt.col_width(1) - tt.scrollbar().width() - 3,
+        );
         tt.set_col_width(3, 0);
         tt.set_col_width(4, 0);
         // tt.set_col_header_height((tt.height() as f32 * 0.04) as i32);
@@ -449,14 +470,12 @@ pub fn draw_data(
     }
     draw::draw_rectf(x, y, w, h);
 
-
     if is_top {
         draw::set_font(enums::Font::TimesBold, 15);
     } else {
         draw::set_font(enums::Font::Times, 14);
     }
-    if txt.contains("今天")
-    {
+    if txt.contains("今天") {
         draw::set_draw_color(Color::from_rgb(0, 128, 0));
     } else {
         draw::set_draw_color(Color::Black);
