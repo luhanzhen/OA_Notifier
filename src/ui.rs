@@ -28,13 +28,27 @@ pub fn check_update()
     {
         Some(new_version) =>
             {
-                let pat = "(?<=http)(.*?)(?=OA)";
-                let result : Vec<_>= new_version.match_indices(pat).collect();
-                println!("{new_version}:  {:?}", result);
+                // let pat = "(?<=http)(.*?)(?=OA)";
+                // let result: Vec<_> = new_version.match_indices(pat).collect();
+                match new_version.find("@@first@@")
+                {
+                    Some(first) => {
+                        match new_version.find("@@second@@")
+                        {
+                            Some(second) => {
+                                let str = &new_version[first..second];
+                                println!("{new_version}:  {:?}", str);
+                            }
+                            None => {}
+                        }
+                    }
+                    None => {}
+                }
+
                 if new_version.contains(VERSION)
                 {
                     println!("存在最新版。");
-                }else {
+                } else {
                     println!("已经是最新版。");
                 }
             }
@@ -56,8 +70,8 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
                 .with_size(width, height)
                 .with_label(title);
             let mut txt = text::TextDisplay::default()
-                .with_size(win.width(), win.height() - 10)
-                .with_pos(0, 10);
+                .with_size(win.width(), win.height() - 3)
+                .with_pos(0, 3);
 
             //为了下载附件，可能有多个附件
             // let mut btn = Frame::default()
@@ -227,13 +241,10 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
     }
 }
 
-pub fn add_menu(
-    wind: &mut DoubleWindow,
-    menubar: &mut MenuBar,
-    table: &mut SmartTable,
-    sender_keywords: Sender<String>,
-) {
+pub fn add_menu(wind: &mut DoubleWindow, menubar: &mut MenuBar, table: &mut SmartTable, sender_keywords: Sender<String>) {
     menubar.add_choice("搜索  |过滤  |检查更新 ");
+    menubar.set_color(Color::from_rgb(246, 251, 255));
+
     let windx = wind.x_root();
     let windy = wind.y_root();
     let mut tt = table.clone();
@@ -300,10 +311,16 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
     table.set_col_resize(true);
     table.set_col_header(true);
     table.set_row_header(false);
+    // table.set_color(Color::from_rgb(246, 251, 255));
+    // table.set_selection_color(Color::from_rgb(246, 251, 255));
+    table.scrollbar().set_color(Color::from_rgb(246, 251, 255));
+    table.hscrollbar().set_color(Color::from_rgb(246, 251, 255));
+    table.scrollbar().set_selection_color(Color::from_hex(0xD8DBE2));
+    table.hscrollbar().set_selection_color(Color::from_hex(0xD8DBE2));
 
     table.set_col_width(0, (table.width() as f32 * 0.67) as i32);
     table.set_col_width(1, (table.width() as f32 * 0.18) as i32);
-    table.set_col_width(2, table.width() - table.col_width(0) - table.col_width(1));
+    table.set_col_width(2, table.width() - table.col_width(0) - table.col_width(1) - table.scrollbar().width() - 3);
     table.set_col_width(3, 0);
     table.set_col_width(4, 0);
 
@@ -391,7 +408,7 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
     wind.draw(move |_| {
         tt.set_col_width(0, (tt.width() as f32 * 0.67) as i32);
         tt.set_col_width(1, (tt.width() as f32 * 0.18) as i32);
-        tt.set_col_width(2, tt.width() - tt.col_width(0) - tt.col_width(1));
+        tt.set_col_width(2, tt.width() - tt.col_width(0) - tt.col_width(1) - tt.scrollbar().width() - 3);
         tt.set_col_width(3, 0);
         tt.set_col_width(4, 0);
         // tt.set_col_header_height((tt.height() as f32 * 0.04) as i32);
@@ -403,9 +420,13 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
 pub fn draw_header(txt: &str, x: i32, y: i32, w: i32, h: i32) {
     draw::push_clip(x, y, w, h);
     draw::draw_box(FrameType::ThinUpBox, x, y, w, h, Color::FrameDefault);
+    draw::set_draw_color(Color::from_rgb(246, 251, 255));
+    draw::draw_rectf(x, y, w, h);
     draw::set_draw_color(Color::Black);
     draw::set_font(enums::Font::TimesBold, 16);
     draw::draw_text2(txt, x, y, w, h, enums::Align::Center);
+    draw::set_draw_color(Color::from_hex(0x3D5A80));
+    draw::draw_rect(x, y, w, h);
     draw::pop_clip();
 }
 
@@ -442,7 +463,7 @@ pub fn draw_data(
     }
     // draw::set_draw_color()
     draw::draw_text2(txt, x, y, w, h, enums::Align::Center);
-    draw::set_draw_color(Color::Black);
+    draw::set_draw_color(Color::from_hex(0x3D5A80));
     draw::draw_rect(x, y, w, h);
     draw::pop_clip();
 }

@@ -12,6 +12,7 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
 use std::sync::mpsc;
+use fltk::enums::Color;
 
 extern crate chrono;
 extern crate timer;
@@ -82,6 +83,9 @@ fn main() {
     let mut wind = Window::default()
         .with_size(init_width, init_height)
         .with_label("OA Notifier");
+    wind.set_color( Color::from_rgb(246, 251, 255));
+    wind.set_selection_color(Color::from_rgb(246, 251, 255));
+    wind.set_label_color(Color::from_rgb(246, 251, 255));
 
     if fs::metadata("./icon.ico").is_ok() {
         let icon: IcoImage = IcoImage::load(&Path::new("icon.ico")).unwrap();
