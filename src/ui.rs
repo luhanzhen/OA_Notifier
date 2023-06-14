@@ -275,7 +275,8 @@ pub fn add_menu(
     menubar.add_choice("搜索  |过滤  ");
     menubar.set_text_font(enums::Font::TimesBold);
 
-    menubar.set_color(Color::from_rgb(246, 251, 255));
+    // menubar.set_color(Color::from_rgb(246, 251, 255));
+    menubar.set_color(Color::White);
     let windx = wind.x_root();
     let windy = wind.y_root();
     let mut tt = table.clone();

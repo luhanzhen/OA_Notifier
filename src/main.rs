@@ -89,10 +89,10 @@ fn main() {
         let icon: IcoImage = IcoImage::load(&Path::new("icon.ico")).unwrap();
         wind.set_icon(Some(icon));
     }
-    let mut menubar = menu::MenuBar::new(0, 0, init_width, 25, "");
+    let mut menubar = menu::MenuBar::new(-2, 0, init_width+1, 27, "");
     let mut table = SmartTable::default()
         .with_size(wind.width() - 2, wind.height() - 25)
-        .with_pos(0, 23)
+        .with_pos(0, 24)
         .with_opts(TableOpts {
             rows: vector.borrow().len() as i32,
             cols: 5,
