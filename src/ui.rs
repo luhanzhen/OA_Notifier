@@ -32,7 +32,7 @@ pub fn check_update(x: i32, y: i32) {
                     println!("{new_version}:  {:?}", str);
                     if str.contains(VERSION) {
                         // 存在最新版。
-                        dialog::message(x, y, "已经是最新版。");
+                        // dialog::message(x, y, "已经是最新版。");
                         match dialog::choice2(
                             x,
                             y,
