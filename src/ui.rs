@@ -23,16 +23,16 @@ use webbrowser;
  */
 
 pub fn check_update(x: i32, y: i32) {
-    dialog::message_title("OA Notifier 更新");
     match get_update() {
         Some(new_version) => match new_version.find("@@first@@") {
             Some(first) => match new_version.find("@@second@@") {
                 Some(second) => {
                     let str = &new_version[(first + 9)..second];
-                    println!("{new_version}:  {:?}", str);
+                    // println!("{new_version}:  {:?}", str);
                     if str.contains(VERSION) {
                         // 存在最新版。
                         // dialog::message(x, y, "已经是最新版。");
+                        dialog::message_title("OA Notifier 更新");
                         match dialog::choice2(
                             x,
                             y,
@@ -42,26 +42,31 @@ pub fn check_update(x: i32, y: i32) {
                             "",
                         ) {
                             Some(choice) => {
-                                if choice == 2 {
+                                if choice == 1 {
                                     webbrowser::open(str).unwrap();
+                                    dialog::message_title("OA Notifier 更新");
                                     dialog::message(x, y, "下载最新版，删除现在的软件即可。");
                                 }
                             }
                             None => {}
                         }
                     } else {
+                        dialog::message_title("OA Notifier 更新");
                         dialog::message(x, y, "当前版本已经是最新版。");
                     }
                 }
                 None => {
+                    dialog::message_title("OA Notifier 更新");
                     dialog::message(x, y, "网络好像有点问题。");
                 }
             },
             None => {
+                dialog::message_title("OA Notifier 更新");
                 dialog::message(x, y, "网络好像有点问题。");
             }
         },
         None => {
+            dialog::message_title("OA Notifier 更新");
             dialog::message(x, y, "网络好像有点问题。");
         }
     }
