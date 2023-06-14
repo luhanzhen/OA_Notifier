@@ -49,6 +49,13 @@ fn main() {
     if !instance.is_single() {
         return;
     }
+
+    is_reachable("github.com:80");
+    is_reachable("59.72.109.14:7788");
+    is_reachable("192.168.1.100:7788");
+    if !is_reachable("oa.jlu.edu.cn:80") {
+        return;
+    }
     let screens = Screen::all_screens();
 
     let init_width: i32 = (screens[0].w() as f32 * 0.618) as i32;

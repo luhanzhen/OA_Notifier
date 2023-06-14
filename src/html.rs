@@ -1,5 +1,7 @@
 use crate::item::Item;
+use reachable::*;
 use std::cell::RefCell;
+use std::str::FromStr;
 use std::sync::mpsc;
 use std::thread;
 
@@ -175,42 +177,113 @@ pub fn get_table(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Ite
 }
 
 pub fn get_update() -> Option<String> {
-    return match reqwest::blocking::get(
-        "http://192.168.1.100:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file",
-    ) {
-        Ok(webpage) => {
-            let response = webpage.text().unwrap();
-            if response.is_empty() {
-                return None;
-            }
-            Some(response)
-        }
-        Err(_) => {
-            match reqwest::blocking::get(
-                "http://59.72.109.14:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file",
-            ) {
-                Ok(webpage) => {
-                    let response = webpage.text().unwrap();
-                    if response.is_empty() {
-                        return None;
-                    }
+    return if is_reachable("192.168.1.100:7788") {
+        match reqwest::blocking::get(
+            "http://192.168.1.100:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file",
+        ) {
+            Ok(webpage) => {
+                println!("192.168.1.100");
+                let response = webpage.text().unwrap();
+                if response.is_empty() {
+                    None
+                } else {
                     Some(response)
                 }
-                Err(_) => {
-                    match reqwest::blocking::get(
-                        "https://github.com/luhanzhen/OA_Notifier/blob/version2/Version_File",
-                    ) {
-                        Ok(webpage) => {
-                            let response = webpage.text().unwrap();
-                            if response.is_empty() {
-                                return None;
-                            }
-                            Some(response)
-                        }
-                        Err(_) => None,
-                    }
+            }
+            Err(_) => None,
+        }
+    } else if is_reachable("59.72.109.14:7788") {
+        match reqwest::blocking::get(
+            "http://59.72.109.14:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file",
+        ) {
+            Ok(webpage) => {
+                println!("59.72.109.14");
+                let response = webpage.text().unwrap();
+                if response.is_empty() {
+                    None
+                } else {
+                    Some(response)
                 }
             }
+            Err(_) => None,
+        }
+    } else if is_reachable("github.com") {
+        match reqwest::blocking::get(
+            "https://github.com/luhanzhen/OA_Notifier/blob/version2/Version_File",
+        ) {
+            Ok(webpage) => {
+                println!("github");
+                let response = webpage.text().unwrap();
+                if response.is_empty() {
+                    None
+                } else {
+                    Some(response)
+                }
+            }
+            Err(_) => None,
+        }
+    } else {
+        None
+    }
+
+    //
+    // return match reqwest::blocking::get(
+    //     "http://59.72.109.14:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file",
+    // ) {
+    //     Ok(webpage) => {
+    //         println!("59.72.109.14");
+    //         let response = webpage.text().unwrap();
+    //         if response.is_empty() {
+    //             return None;
+    //         }
+    //         Some(response)
+    //     }
+    //     Err(_) => {
+    //         match reqwest::blocking::get(
+    //             "http://192.168.1.100:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file",
+    //         ) {
+    //             Ok(webpage) => {
+    //                 println!("192.168.1.100");
+    //                 let response = webpage.text().unwrap();
+    //                 if response.is_empty() {
+    //                     return None;
+    //                 }
+    //                 Some(response)
+    //             }
+    //             Err(_) => {
+    //                 match reqwest::blocking::get(
+    //                     "https://github.com/luhanzhen/OA_Notifier/blob/version2/Version_File",
+    //                 ) {
+    //                     Ok(webpage) => {
+    //                         println!("github");
+    //                         let response = webpage.text().unwrap();
+    //                         if response.is_empty() {
+    //                             return None;
+    //                         }
+    //                         Some(response)
+    //                     }
+    //                     Err(_) => None,
+    //                 }
+    //             }
+    //         }
+    //     }
+    // };
+}
+
+pub fn is_reachable(address: &str) -> bool {
+    let tcp_target = TcpTarget::from_str(address).unwrap();
+    return match tcp_target.check_availability() {
+        Ok(status) => {
+            println!("Okk {} is {}", tcp_target.get_id(), status);
+            true
+        }
+        Err(error) => {
+            println!(
+                "Err Check failed for {} reason {}",
+                tcp_target.get_id(),
+                error
+            );
+            false
         }
     };
 }

@@ -20,6 +20,8 @@ chrono = "0.4.10"
 webbrowser = "0.8.9"
 tray-icon = "0.5.1"
 single-instance = "0.3.3"
+reachable = "0.2.2"
+
 #tokio = "0.3.7"
 #fltk-grid = "0.1"
 #spider = "1.29.0"

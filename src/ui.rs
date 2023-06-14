@@ -21,6 +21,10 @@ use webbrowser;
  */
 
 pub fn check_update(x: i32, y: i32) {
+    // dialog::message_title("OA Notifier 更新");
+    // dialog::message_set_hotspot(false);
+    // dialog::message(x, y, "正在检查....");
+
     match get_update() {
         Some(new_version) => match new_version.find("@@first@@") {
             Some(first) => match new_version.find("@@second@@") {
