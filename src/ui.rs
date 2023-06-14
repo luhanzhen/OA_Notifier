@@ -1,7 +1,5 @@
 use std::cell::RefCell;
 use std::sync::mpsc::Sender;
-// use std::os::windows::process::CommandExt;
-// use std::process::Command;
 use crate::html::{get_content, get_update};
 use crate::item::{Item, VERSION};
 use fltk::app::redraw;
@@ -32,11 +30,15 @@ pub fn check_update(x: i32, y: i32) {
                     if !str.contains(VERSION) {
                         // 存在最新版。
                         // dialog::message(x, y, "已经是最新版。");
+                        let third = new_version.find("@@third@@").unwrap();
+                        let four = new_version.find("@@four@@").unwrap();
+                        let update_log = &new_version[(third + 9)..four];
+                        let mess = format!("有最新版，你要更新吗？\n{}", update_log);
                         dialog::message_title("OA Notifier 更新");
                         match dialog::choice2(
                             x,
                             y,
-                            "有最新版，你要更新吗？",
+                            mess.as_str(),
                             "算了",
                             "在浏览器中下载",
                             "",
@@ -263,8 +265,9 @@ pub fn add_menu(
     sender_keywords: Sender<String>,
 ) {
     menubar.add_choice("搜索  |过滤  ");
-    menubar.set_color(Color::from_rgb(246, 251, 255));
+    menubar.set_text_font(enums::Font::TimesBold);
 
+    menubar.set_color(Color::from_rgb(246, 251, 255));
     let windx = wind.x_root();
     let windy = wind.y_root();
     let mut tt = table.clone();
