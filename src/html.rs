@@ -127,6 +127,7 @@ fn get_title_page(url: String) -> Option<Box<Vec<Item>>> {
 }
 
 pub fn get_table(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Item>>> {
+
     const PAGES: i32 = 10;
     let mut url = vec![];
     for i in 0..PAGES {
@@ -225,49 +226,6 @@ pub fn get_update() -> Option<String> {
     } else {
         None
     };
-
-    //
-    // return match reqwest::blocking::get(
-    //     "http://59.72.109.14:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file",
-    // ) {
-    //     Ok(webpage) => {
-    //         println!("59.72.109.14");
-    //         let response = webpage.text().unwrap();
-    //         if response.is_empty() {
-    //             return None;
-    //         }
-    //         Some(response)
-    //     }
-    //     Err(_) => {
-    //         match reqwest::blocking::get(
-    //             "http://192.168.1.100:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file",
-    //         ) {
-    //             Ok(webpage) => {
-    //                 println!("192.168.1.100");
-    //                 let response = webpage.text().unwrap();
-    //                 if response.is_empty() {
-    //                     return None;
-    //                 }
-    //                 Some(response)
-    //             }
-    //             Err(_) => {
-    //                 match reqwest::blocking::get(
-    //                     "https://github.com/luhanzhen/OA_Notifier/blob/version2/Version_File",
-    //                 ) {
-    //                     Ok(webpage) => {
-    //                         println!("github");
-    //                         let response = webpage.text().unwrap();
-    //                         if response.is_empty() {
-    //                             return None;
-    //                         }
-    //                         Some(response)
-    //                     }
-    //                     Err(_) => None,
-    //                 }
-    //             }
-    //         }
-    //     }
-    // };
 }
 
 pub fn is_reachable(address: &str) -> bool {
