@@ -127,7 +127,6 @@ fn get_title_page(url: String) -> Option<Box<Vec<Item>>> {
 }
 
 pub fn get_table(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Item>>> {
-
     const PAGES: i32 = 10;
     let mut url = vec![];
     for i in 0..PAGES {
