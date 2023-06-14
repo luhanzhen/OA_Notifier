@@ -277,8 +277,8 @@ pub fn add_menu(
 
     // menubar.set_color(Color::from_rgb(246, 251, 255));
     menubar.set_color(Color::White);
-    let windx = wind.x_root();
-    let windy = wind.y_root();
+    let windx = wind.x() + wind.height() / 5;
+    let windy = wind.y() + wind.width() / 5;
     let mut tt = table.clone();
     let mut last_keywords = String::from(""); //记住上次设置的关键字
     menubar.set_callback(move |c| {
@@ -287,8 +287,8 @@ pub fn add_menu(
                 "过滤  " => {
                     dialog::message_title("OA Notifier 过滤");
                     match dialog::input(
-                        c.x() + windx,
-                        c.y() + windy,
+                        windx,
+                        windy,
                         "输入要过滤的内容，用空格隔开:",
                         last_keywords.as_str(),
                     ) {
@@ -306,8 +306,7 @@ pub fn add_menu(
                         tt.set_cell_value(i, 4, "");
                     }
                     dialog::message_title("OA Notifier 搜索");
-                    match dialog::input(c.x() + windx, c.y() + windy, "输入要查找的内容:", "")
-                    {
+                    match dialog::input(windx, windy, "输入要查找的内容:", "") {
                         Some(code) => {
                             if !code.is_empty() {
                                 // let code = String::from("吉林");
@@ -350,8 +349,8 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
         .hscrollbar()
         .set_selection_color(Color::from_hex(0xD8D8D8));
 
-    table.set_col_width(0, (table.width() as f32 * 0.67) as i32);
-    table.set_col_width(1, (table.width() as f32 * 0.18) as i32);
+    table.set_col_width(0, (table.width() as f32 * 0.69) as i32);
+    table.set_col_width(1, (table.width() as f32 * 0.22) as i32);
     table.set_col_width(
         2,
         table.width() - table.col_width(0) - table.col_width(1) - table.scrollbar().width() - 3,
@@ -395,9 +394,14 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
                     webbrowser::open(&tt.cell_value(ress, 3)).unwrap()
                 }
             }
-
             true
         }
+        // Event::Resize =>
+        //     {
+        //         println!("resize");
+        //         tr.redraw();
+        //         true
+        //     }
         _ => false,
     });
 
@@ -429,7 +433,9 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
                 x,
                 y,
                 w,
-                h, row, col,
+                h,
+                row,
+                col,
                 t.is_selected(row, col),
                 tt.cell_value(row, 0).contains("置顶"),
                 tt.cell_value(row, 4).contains("f"),
@@ -441,8 +447,8 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
 
     let mut tt = table.clone();
     wind.draw(move |_| {
-        tt.set_col_width(0, (tt.width() as f32 * 0.67) as i32);
-        tt.set_col_width(1, (tt.width() as f32 * 0.18) as i32);
+        tt.set_col_width(0, (tt.width() as f32 * 0.69) as i32);
+        tt.set_col_width(1, (tt.width() as f32 * 0.22) as i32);
         tt.set_col_width(
             2,
             tt.width() - tt.col_width(0) - tt.col_width(1) - tt.scrollbar().width() - 3,
@@ -489,8 +495,7 @@ pub fn draw_data(
     if selected || is_found {
         draw::set_draw_color(Color::from_rgb(201, 227, 251));
     } else {
-        if row % 2 == 1
-        {
+        if row % 2 == 1 {
             draw::set_draw_color(Color::from_rgb(246, 251, 255));
         } else {
             draw::set_draw_color(Color::from_rgb(255, 255, 255));

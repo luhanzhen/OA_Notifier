@@ -89,7 +89,7 @@ fn main() {
         let icon: IcoImage = IcoImage::load(&Path::new("icon.ico")).unwrap();
         wind.set_icon(Some(icon));
     }
-    let mut menubar = menu::MenuBar::new(-2, 0, init_width+1, 27, "");
+    let mut menubar = menu::MenuBar::new(-2, 0, init_width + 1, 27, "");
     let mut table = SmartTable::default()
         .with_size(wind.width() - 2, wind.height() - 25)
         .with_pos(0, 24)
@@ -298,7 +298,7 @@ fn main() {
                 if !wind.visible() {
                     wind.platform_show();
                 }
-                check_update(init_width / 2, init_height / 2)
+                check_update(wind.x() + wind.width() / 3, wind.y() + wind.height() / 3)
             }
             if event.id == about_i.id() {
                 if !wind.visible() {
@@ -323,7 +323,11 @@ fn main() {
                                     个人用户享有使用权，作者不对使用者造成的后果负责。
                                     本软件仅供个人使用，不可用于商业盈利目的或者非法目的。
                                     请主动遵守国家法律法规和学校的有关规定，非法或者违规行为造成的法律责任和后果自负。", VERSION);
-                dialog::message(init_width / 2, init_height / 2, message.as_str());
+                dialog::message(
+                    wind.x() + wind.width() / 4,
+                    wind.y() + wind.height() / 4,
+                    message.as_str(),
+                );
             }
         }
 

@@ -127,7 +127,7 @@ fn get_title_page(url: String) -> Option<Box<Vec<Item>>> {
 }
 
 pub fn get_table(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Item>>> {
-    const PAGES: i32 = 10;
+    const PAGES: i32 = 20;
     let mut url = vec![];
     for i in 0..PAGES {
         let u = format!("https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage={}", i + 1);
