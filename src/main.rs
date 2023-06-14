@@ -8,8 +8,6 @@ use fltk_table::{SmartTable, TableOpts};
 use notify_rust::Notification;
 use std::cell::{Ref, RefCell};
 use std::collections::HashSet;
-
-use fltk::enums::Color;
 use std::fs;
 use std::path::Path;
 use std::sync::mpsc;
@@ -83,9 +81,9 @@ fn main() {
     let mut wind = Window::default()
         .with_size(init_width, init_height)
         .with_label("OA Notifier");
-    wind.set_color(Color::from_rgb(246, 251, 255));
-    wind.set_selection_color(Color::from_rgb(246, 251, 255));
-    wind.set_label_color(Color::from_rgb(246, 251, 255));
+    // wind.set_color(Color::from_rgb(246, 251, 255));
+    // wind.set_selection_color(Color::from_rgb(246, 251, 255));
+    // wind.set_label_color(Color::from_rgb(246, 251, 255));
 
     if fs::metadata("./icon.ico").is_ok() {
         let icon: IcoImage = IcoImage::load(&Path::new("icon.ico")).unwrap();
@@ -94,7 +92,7 @@ fn main() {
     let mut menubar = menu::MenuBar::new(0, 0, init_width, 25, "");
     let mut table = SmartTable::default()
         .with_size(wind.width() - 2, wind.height() - 25)
-        .with_pos(0, 25)
+        .with_pos(0, 23)
         .with_opts(TableOpts {
             rows: vector.borrow().len() as i32,
             cols: 5,

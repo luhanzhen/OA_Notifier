@@ -419,7 +419,7 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
     table.draw_cell(move |t, ctx, row, col, x, y, w, h| match ctx {
         table::TableContext::ColHeader => {
             if col < 3 {
-                draw_header(tt.col_header_value(col).as_str(), x, y, w, h);
+                draw_header(tt.col_header_value(col).as_str(), x, y, w, h,col);
             }
         } // Column titles
         table::TableContext::Cell => {
@@ -428,7 +428,7 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
                 x,
                 y,
                 w,
-                h,
+                h,row,col,
                 t.is_selected(row, col),
                 tt.cell_value(row, 0).contains("置顶"),
                 tt.cell_value(row, 4).contains("f"),
@@ -454,16 +454,20 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
 
 //
 //
-pub fn draw_header(txt: &str, x: i32, y: i32, w: i32, h: i32) {
+pub fn draw_header(txt: &str, x: i32, y: i32, w: i32, h: i32, col: i32) {
     draw::push_clip(x, y, w, h);
     draw::draw_box(FrameType::ThinUpBox, x, y, w, h, Color::FrameDefault);
     draw::set_draw_color(Color::from_rgb(246, 251, 255));
     draw::draw_rectf(x, y, w, h);
     draw::set_draw_color(Color::Black);
     draw::set_font(enums::Font::TimesBold, 16);
-    draw::draw_text2(txt, x, y, w, h, enums::Align::Center);
-    draw::set_draw_color(Color::from_hex(0x3D5A80));
-    draw::draw_rect(x, y, w, h);
+    if col != 0 {
+        draw::draw_text2(txt, x, y, w, h, enums::Align::Left);
+    }else {
+        draw::draw_text2(txt, x, y, w, h, enums::Align::Center);
+    }
+    // draw::set_draw_color(Color::from_hex(0x3D5A80));
+    // draw::draw_rect(x, y, w, h);
     draw::pop_clip();
 }
 
@@ -474,15 +478,22 @@ pub fn draw_data(
     y: i32,
     w: i32,
     h: i32,
+    row: i32,
+    col: i32,
     selected: bool,
     is_top: bool,
-    is_found: bool,
+    is_found: bool
 ) {
     draw::push_clip(x, y, w, h);
     if selected || is_found {
         draw::set_draw_color(Color::from_rgb(201, 227, 251));
     } else {
-        draw::set_draw_color(Color::from_rgb(246, 251, 255));
+        if row % 2 == 1
+        {
+            draw::set_draw_color(Color::from_rgb(246, 251, 255));
+        } else {
+            draw::set_draw_color(Color::from_rgb(255, 255, 255));
+        }
     }
     draw::draw_rectf(x, y, w, h);
 
@@ -497,8 +508,12 @@ pub fn draw_data(
         draw::set_draw_color(Color::Black);
     }
     // draw::set_draw_color()
+    if col != 0 {
+        draw::draw_text2(txt, x, y, w, h, enums::Align::Left);
+    }else {
     draw::draw_text2(txt, x, y, w, h, enums::Align::Center);
-    draw::set_draw_color(Color::from_hex(0x3D5A80));
-    draw::draw_rect(x, y, w, h);
+    }
+    // draw::set_draw_color(Color::from_hex(0x3D5A80));
+    // draw::draw_rect(x, y, w, h);
     draw::pop_clip();
 }
