@@ -48,7 +48,7 @@ fn main() {
         return;
     }
 
-    if !is_reachable("oa.jlu.edu.cn:80") {
+    if !is_reachable("oa.jlu.edu.cn:443") {
         return;
     }
     let screens = Screen::all_screens();
@@ -317,7 +317,7 @@ fn main() {
                                     支持检查是否存在最新版。
                                     本软件每隔十分钟爬取oa网站前若干页的内容。
                                     本软件承诺保护用户隐私，不收集任何信息。
-                                    本软件著作权及其解释权归作者镇路晗所有。
+                                    本软件著作权及其解释权归项目作者所有。
                                     项目源代码及最新版在网站[https://github.com/luhanzhen/OA_Notifier]上。
                                     有好的建议或者其它需求可以给我留言。
                                     个人用户享有使用权，作者不对使用者造成的后果负责。

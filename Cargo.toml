@@ -2,7 +2,7 @@
 name = "OANotifier"
 version = "1.2.0"
 edition = "2021"
-authors = ["镇路晗 <a@example.com>"]
+authors = ["luhanzhen"]
 #description = "本软件用于自动提醒吉大OA更新内容。"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

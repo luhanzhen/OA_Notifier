@@ -207,7 +207,7 @@ pub fn get_update() -> Option<String> {
             }
             Err(_) => None,
         }
-    } else if is_reachable("github.com:80") {
+    } else if is_reachable("github.com:443") {
         match reqwest::blocking::get(
             "https://github.com/luhanzhen/OA_Notifier/blob/version2/Version_File",
         ) {
