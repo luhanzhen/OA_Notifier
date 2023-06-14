@@ -234,10 +234,11 @@ fn main() {
                 return filtered;
             };
             let new_items = changed(&mut table, &now.borrow());
-            let filtered = filter(new_items, keywords.clone());
+            let mut filtered = filter(new_items, keywords.clone());
 
             if !filtered.is_empty() {
                 // println!("改变了");
+                filtered.reverse();
                 for title in filtered {
                     match Notification::new()
                         .appname("OA Notifier")
