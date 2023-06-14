@@ -1,5 +1,3 @@
-use std::cell::RefCell;
-use std::sync::mpsc::Sender;
 use crate::html::{get_content, get_update};
 use crate::item::{Item, VERSION};
 use fltk::app::redraw;
@@ -10,6 +8,8 @@ use fltk::menu::MenuBar;
 use fltk::window::DoubleWindow;
 use fltk::{prelude::*, *};
 use fltk_table::SmartTable;
+use std::cell::RefCell;
+use std::sync::mpsc::Sender;
 use webbrowser;
 
 /**
@@ -33,16 +33,14 @@ pub fn check_update(x: i32, y: i32) {
                         let third = new_version.find("@@third@@").unwrap();
                         let four = new_version.find("@@four@@").unwrap();
                         let update_log = &new_version[(third + 9)..four];
-                        let mess = format!("有最新版，你要更新吗？\n{}", update_log);
+                        let mess = if update_log.is_empty() {
+                            format!("有最新版，你要更新吗？")
+                        } else {
+                            format!("有最新版，你要更新吗？{}", update_log)
+                        };
                         dialog::message_title("OA Notifier 更新");
-                        match dialog::choice2(
-                            x,
-                            y,
-                            mess.as_str(),
-                            "算了",
-                            "在浏览器中下载",
-                            "",
-                        ) {
+                        match dialog::choice2(x, y, mess.as_str(), "算了", "在浏览器中下载", "")
+                        {
                             Some(choice) => {
                                 if choice == 1 {
                                     webbrowser::open(str).unwrap();
