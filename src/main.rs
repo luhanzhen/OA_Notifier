@@ -50,9 +50,9 @@ fn main() {
         return;
     }
 
-    is_reachable("github.com:80");
-    is_reachable("59.72.109.14:7788");
-    is_reachable("192.168.1.100:7788");
+    // is_reachable("github.com:80");
+    // is_reachable("59.72.109.14:7788");
+    // is_reachable("192.168.1.100:7788");
     if !is_reachable("oa.jlu.edu.cn:80") {
         return;
     }

@@ -34,12 +34,18 @@ pub fn check_update(x: i32, y: i32) {
                     if !str.contains(VERSION) {
                         // 存在最新版。
                         // dialog::message(x, y, "已经是最新版。");
-                        let third = new_version.find("@@third@@").unwrap();
-                        let four = new_version.find("@@four@@").unwrap();
-                        let update_log = &new_version[(third + 9)..four];
-                        let mess = if update_log.is_empty() {
+                        let third = match new_version.find("@@third@@") {
+                            Some(x) => x,
+                            None => usize::MAX,
+                        };
+                        let four = match new_version.find("@@four@@") {
+                            Some(x) => x,
+                            None => usize::MAX,
+                        };
+                        let mess = if third != usize::MAX && four != usize::MAX {
                             format!("有最新版，你要更新吗？")
                         } else {
+                            let update_log = &new_version[(third + 9)..four];
                             format!("有最新版，你要更新吗？{}", update_log)
                         };
                         dialog::message_title("OA Notifier 更新");

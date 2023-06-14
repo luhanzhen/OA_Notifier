@@ -207,7 +207,7 @@ pub fn get_update() -> Option<String> {
             }
             Err(_) => None,
         }
-    } else if is_reachable("github.com") {
+    } else if is_reachable("github.com:80") {
         match reqwest::blocking::get(
             "https://github.com/luhanzhen/OA_Notifier/blob/version2/Version_File",
         ) {
@@ -224,7 +224,7 @@ pub fn get_update() -> Option<String> {
         }
     } else {
         None
-    }
+    };
 
     //
     // return match reqwest::blocking::get(
@@ -273,16 +273,16 @@ pub fn get_update() -> Option<String> {
 pub fn is_reachable(address: &str) -> bool {
     let tcp_target = TcpTarget::from_str(address).unwrap();
     return match tcp_target.check_availability() {
-        Ok(status) => {
-            println!("Okk {} is {}", tcp_target.get_id(), status);
+        Ok(_) => {
+            // println!("Okk {} is {}", tcp_target.get_id(), status);
             true
         }
-        Err(error) => {
-            println!(
-                "Err Check failed for {} reason {}",
-                tcp_target.get_id(),
-                error
-            );
+        Err(_) => {
+            // println!(
+            //     "Err Check failed for {} reason {}",
+            //     tcp_target.get_id(),
+            //     error
+            // );
             false
         }
     };
