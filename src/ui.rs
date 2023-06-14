@@ -29,7 +29,7 @@ pub fn check_update(x: i32, y: i32) {
                 Some(second) => {
                     let str = &new_version[(first + 9)..second];
                     // println!("{new_version}:  {:?}", str);
-                    if str.contains(VERSION) {
+                    if !str.contains(VERSION) {
                         // 存在最新版。
                         // dialog::message(x, y, "已经是最新版。");
                         dialog::message_title("OA Notifier 更新");
