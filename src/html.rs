@@ -4,6 +4,7 @@ use std::cell::RefCell;
 use std::str::FromStr;
 use std::sync::mpsc;
 use std::thread;
+// use std::time::SystemTime;
 
 /**
  * <p> @project_name: OANotifier <p/>
@@ -126,10 +127,9 @@ fn get_title_page(url: String) -> Option<Box<Vec<Item>>> {
     }
 }
 
-pub fn get_table(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Item>>> {
-    const PAGES: i32 = 20;
+pub fn get_table(vector: &mut RefCell<Vec<Item>>, pages: i32) -> Option<&mut RefCell<Vec<Item>>> {
     let mut url = vec![];
-    for i in 0..PAGES {
+    for i in 0..pages {
         let u = format!("https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?1=1&channelId=179577&startPage={}", i + 1);
         url.push(u);
     }
@@ -160,6 +160,15 @@ pub fn get_table(vector: &mut RefCell<Vec<Item>>) -> Option<&mut RefCell<Vec<Ite
     }
 
     vector.borrow_mut().clear();
+
+    // vector.borrow_mut().push(Item
+    // {
+    //     title: SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).expect("unexpected").as_micros().to_string(),
+    //     source: "".parse().unwrap(),
+    //     href: "".to_string(),
+    //     is_top: false,
+    //     time: "".parse().unwrap(),
+    // });
 
     for r in rx.iter() {
         let v = r.recv().unwrap();

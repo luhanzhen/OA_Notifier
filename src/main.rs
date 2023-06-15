@@ -8,9 +8,10 @@ use fltk_table::{SmartTable, TableOpts};
 use notify_rust::Notification;
 use std::cell::{Ref, RefCell};
 use std::collections::HashSet;
-use std::fs;
+use std::{fs, thread};
 use std::path::Path;
 use std::sync::mpsc;
+
 
 extern crate chrono;
 extern crate timer;
@@ -58,7 +59,7 @@ fn main() {
 
     let mut vector: RefCell<Vec<Item>> = RefCell::new(vec![]);
 
-    match get_table(&mut vector) {
+    match get_table(&mut vector, 20) {
         Some(_) => {}
         None => {
             if vector.borrow().is_empty() {
@@ -145,7 +146,7 @@ fn main() {
     let _guard = {
         // let count = count.clone();
 
-        timer.schedule_repeating(chrono::Duration::seconds(600), move || {
+        timer.schedule_repeating(chrono::Duration::seconds(60), move || {
             let mut now: RefCell<Vec<Item>> = RefCell::new(vec![]);
             match receiver_keywords.try_recv() {
                 Ok(keyword) => {
@@ -156,20 +157,17 @@ fn main() {
             if !is_reachable("oa.jlu.edu.cn:80") {
                 return;
             }
-            match get_table(&mut now) {
+            match get_table(&mut now, 2) { //看看前两页有没有更新
                 Some(_) => {}
                 None => {
                     return;
                 }
             }
-            // if now.borrow().len() != table.rows() as usize {
-            //     return;
-            // }
             let changed = |table: &mut SmartTable, curr: &Ref<Vec<Item>>| -> Vec<Item> {
                 let mut new_items = vec![];
                 if !curr.is_empty() {
                     let mut set: HashSet<String> = HashSet::new();
-                    for i in 0..table.rows() {
+                    for i in 0..curr.len() { //hashset 中不需要这么多东西
                         let other = table.cell_value(i as i32, 0).replace("[置顶]", "");
                         set.insert(other);
                     }
@@ -231,32 +229,73 @@ fn main() {
                 }
                 return filtered;
             };
-            let new_items = changed(&mut table, &now.borrow());
-            let mut filtered = filter(new_items, keywords.clone());
 
-            if !filtered.is_empty() {
-                // println!("改变了");
-                filtered.reverse();
-                for title in filtered {
-                    match Notification::new()
-                        .appname("OA Notifier")
-                        .subtitle(title.source.as_str())
-                        .body(title.title.as_str())
-                        .auto_icon()
-                        .show()
-                    {
-                        Ok(_) => {
-                            // println!("Notification successfully");
-                        }
-                        Err(_) => {
-                            // println!("Notification error");
+            let new_items = changed(&mut table, &now.borrow());
+            let new_items_size = new_items.len();
+            //没有更新的内容，什么都不做
+            if new_items_size == 0
+            {
+                return;
+            }
+            let mut filtered = filter(new_items, keywords.clone());
+            let _thread = thread::spawn(move || {
+                if !filtered.is_empty() {
+                    // println!("改变了");
+                    filtered.reverse();
+                    for title in filtered {
+                        match Notification::new()
+                            .appname("OA Notifier")
+                            .subtitle(title.source.as_str())
+                            .body(title.title.as_str())
+                            .auto_icon()
+                            .show()
+                        {
+                            Ok(_) => {
+                                // println!("Notification successfully");
+                            }
+                            Err(_) => {
+                                // println!("Notification error");
+                            }
                         }
                     }
                 }
-            }
+            });
+
             // 更新表
+            //先往下移动若干个单位
+            println!("\nnew items size is {}", new_items_size);
+            println!("table.rows() size is {}",  table.rows());
+            let mut n = table.rows() - 1;
+            while n >= (now.borrow().len()-1) as i32 {
+                print!("n is {} || ",  n);
+                table.set_cell_value(
+                    n,
+                    0,
+                    table.cell_value(n - new_items_size as i32, 0).as_str(),
+                );
+                table.set_cell_value(
+                    n,
+                    1,
+                    table.cell_value(n - new_items_size as i32, 1).as_str(),
+                );
+                table.set_cell_value(
+                    n,
+                    2,
+                    table.cell_value(n - new_items_size as i32, 2).as_str(),
+                );
+                table.set_cell_value(n, 4, "");
+                n -= 1;
+            }
+            // for i in now.borrow().len()..table.rows() as usize
+            // {
+            //     table.set_cell_value(i as i32, 0, table.cell_value((i - new_items_size) as i32, 0).as_str());
+            //     table.set_cell_value(i as i32, 1, table.cell_value((i - new_items_size) as i32, 1).as_str());
+            //     table.set_cell_value(i as i32, 2, table.cell_value((i - new_items_size) as i32, 2).as_str());
+            //     table.set_cell_value(i as i32, 4, "");
+            // }
+            //新来的全部填上去
             for i in 0..now.borrow().len() {
-                if now.borrow()[i as usize].is_top {
+                if now.borrow()[i].is_top {
                     table.set_label_font(enums::Font::Helvetica);
                     table.set_cell_value(i as i32, 0, &format!("[置顶]{}", &now.borrow()[i].title));
                 } else {
@@ -270,6 +309,7 @@ fn main() {
             }
             table.redraw();
             drop(now);
+            _thread.join().unwrap();
         })
     };
 
@@ -332,6 +372,7 @@ fn main() {
         }
 
         if let Ok(_) = TrayEvent::receiver().try_recv() {
+
             wind.platform_show();
         }
     }
