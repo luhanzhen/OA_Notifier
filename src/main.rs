@@ -146,7 +146,7 @@ fn main() {
     let _guard = {
         // let count = count.clone();
 
-        timer.schedule_repeating(chrono::Duration::seconds(60), move || {
+        timer.schedule_repeating(chrono::Duration::seconds(300), move || {
             let mut now: RefCell<Vec<Item>> = RefCell::new(vec![]);
             match receiver_keywords.try_recv() {
                 Ok(keyword) => {
