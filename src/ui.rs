@@ -42,7 +42,7 @@ pub fn check_update(x: i32, y: i32) {
                             Some(x) => x,
                             None => usize::MAX,
                         };
-                        let mess = if third != usize::MAX && four != usize::MAX {
+                        let mess = if third == usize::MAX || four == usize::MAX {
                             format!("有最新版，你要更新吗？")
                         } else {
                             let update_log = &new_version[(third + 9)..four];
