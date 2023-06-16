@@ -263,11 +263,11 @@ fn main() {
 
             // 更新表
             //先往下移动若干个单位
-            println!("\nnew items size is {}", new_items_size);
-            println!("table.rows() size is {}", table.rows());
+            // println!("\nnew items size is {}", new_items_size);
+            // println!("table.rows() size is {}", table.rows());
             let mut n = table.rows() - 1;
             while n >= (now.borrow().len() - 1) as i32 {
-                print!("n is {} || ", n);
+                // print!("n is {} || ", n);
                 table.set_cell_value(
                     n,
                     0,

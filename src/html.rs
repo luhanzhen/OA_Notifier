@@ -191,7 +191,7 @@ pub fn get_update() -> Option<String> {
             "http://192.168.1.100:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file",
         ) {
             Ok(webpage) => {
-                println!("192.168.1.100");
+                // println!("192.168.1.100");
                 let response = webpage.text().unwrap();
                 if response.is_empty() {
                     None
@@ -206,7 +206,7 @@ pub fn get_update() -> Option<String> {
             "http://59.72.109.14:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file",
         ) {
             Ok(webpage) => {
-                println!("59.72.109.14");
+                // println!("59.72.109.14");
                 let response = webpage.text().unwrap();
                 if response.is_empty() {
                     None
@@ -221,7 +221,7 @@ pub fn get_update() -> Option<String> {
             "https://github.com/luhanzhen/OA_Notifier/blob/version2/Version_File",
         ) {
             Ok(webpage) => {
-                println!("github");
+                // println!("github");
                 let response = webpage.text().unwrap();
                 if response.is_empty() {
                     None

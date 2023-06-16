@@ -497,7 +497,7 @@ pub fn draw_data(
         return;
     }
     draw::push_clip(x, y, w, h);
-    if selected || is_found {
+    if selected {
         draw::set_draw_color(Color::from_rgb(201, 227, 251));
     } else {
         if row % 2 == 1 {
@@ -524,12 +524,17 @@ pub fn draw_data(
     } else {
         draw::set_draw_color(Color::Black);
     }
+    if is_found
+    {
+        draw::set_draw_color(Color::Red);
+    }
     // draw::set_draw_color()
     if col != 0 {
         draw::draw_text2(txt, x, y, w, h, enums::Align::Left);
     } else {
         draw::draw_text2(txt, x, y, w, h, enums::Align::Center);
     }
+
     // draw::set_draw_color(Color::from_hex(0x3D5A80));
     // draw::draw_rect(x, y, w, h);
     draw::pop_clip();
