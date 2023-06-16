@@ -391,7 +391,15 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
                 if app::event_mouse_button() == app::MouseButton::Right {
                     // println!("click right Mouse button");
                     let ress = tr.callback_row();
-                    webbrowser::open(&tt.cell_value(ress, 3)).unwrap()
+                    // https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?channelId=179577&orgname=%E4%BA%BA%E5%8A%9B%E8%B5%84%E6%BA%90%E5%A4%84
+                    let coll = tr.callback_col();
+                    if coll == 1
+                    {
+                        let url = format!("https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?channelId=179577&orgname={}", &tt.cell_value(ress, 1));
+                        webbrowser::open(url.as_str()).unwrap()
+                    } else {
+                        webbrowser::open(&tt.cell_value(ress, 3)).unwrap()
+                    }
                 }
             }
             true
@@ -491,6 +499,9 @@ pub fn draw_data(
     is_top: bool,
     is_found: bool,
 ) {
+    if col > 2 {
+        return;
+    }
     draw::push_clip(x, y, w, h);
     if selected || is_found {
         draw::set_draw_color(Color::from_rgb(201, 227, 251));
@@ -503,13 +514,19 @@ pub fn draw_data(
     }
     draw::draw_rectf(x, y, w, h);
 
-    if is_top {
+    if is_top && col == 0 {
         draw::set_font(enums::Font::TimesBold, 15);
     } else {
         draw::set_font(enums::Font::Times, 14);
     }
-    if col == 2 && txt.contains("今天") {
-        draw::set_draw_color(Color::from_rgb(0, 128, 0));
+    if col == 2 {
+        if txt.contains("今天") {
+            draw::set_draw_color(Color::from_hex(0x2A9D8F));
+        } else {
+            draw::set_draw_color(Color::from_hex(0x6D6875));
+        }
+    } else if col == 1 {
+        draw::set_draw_color(Color::from_rgb(39, 118, 197));
     } else {
         draw::set_draw_color(Color::Black);
     }

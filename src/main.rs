@@ -8,10 +8,9 @@ use fltk_table::{SmartTable, TableOpts};
 use notify_rust::Notification;
 use std::cell::{Ref, RefCell};
 use std::collections::HashSet;
-use std::{fs, thread};
 use std::path::Path;
 use std::sync::mpsc;
-
+use std::{fs, thread};
 
 extern crate chrono;
 extern crate timer;
@@ -54,8 +53,8 @@ fn main() {
     }
     let screens = Screen::all_screens();
 
-    let init_width: i32 = (screens[0].w() as f32 * 0.618) as i32;
-    let init_height: i32 = (screens[0].h() as f32 * 0.618) as i32;
+    let init_width: i32 = (screens[0].w() as f32 * 0.5) as i32;
+    let init_height: i32 = (screens[0].h() as f32 * 0.5) as i32;
 
     let mut vector: RefCell<Vec<Item>> = RefCell::new(vec![]);
 
@@ -157,7 +156,8 @@ fn main() {
             if !is_reachable("oa.jlu.edu.cn:80") {
                 return;
             }
-            match get_table(&mut now, 2) { //看看前两页有没有更新
+            match get_table(&mut now, 2) {
+                //看看前两页有没有更新
                 Some(_) => {}
                 None => {
                     return;
@@ -167,7 +167,8 @@ fn main() {
                 let mut new_items = vec![];
                 if !curr.is_empty() {
                     let mut set: HashSet<String> = HashSet::new();
-                    for i in 0..curr.len() { //hashset 中不需要这么多东西
+                    for i in 0..curr.len() {
+                        //hashset 中不需要这么多东西
                         let other = table.cell_value(i as i32, 0).replace("[置顶]", "");
                         set.insert(other);
                     }
@@ -233,8 +234,7 @@ fn main() {
             let new_items = changed(&mut table, &now.borrow());
             let new_items_size = new_items.len();
             //没有更新的内容，什么都不做
-            if new_items_size == 0
-            {
+            if new_items_size == 0 {
                 return;
             }
             let mut filtered = filter(new_items, keywords.clone());
@@ -264,10 +264,10 @@ fn main() {
             // 更新表
             //先往下移动若干个单位
             println!("\nnew items size is {}", new_items_size);
-            println!("table.rows() size is {}",  table.rows());
+            println!("table.rows() size is {}", table.rows());
             let mut n = table.rows() - 1;
-            while n >= (now.borrow().len()-1) as i32 {
-                print!("n is {} || ",  n);
+            while n >= (now.borrow().len() - 1) as i32 {
+                print!("n is {} || ", n);
                 table.set_cell_value(
                     n,
                     0,
@@ -372,7 +372,6 @@ fn main() {
         }
 
         if let Ok(_) = TrayEvent::receiver().try_recv() {
-
             wind.platform_show();
         }
     }
