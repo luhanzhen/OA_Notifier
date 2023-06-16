@@ -375,7 +375,7 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
                 let ress = tr.callback_row();
                 // Command::new("cmd.exe").creation_flags(0x08000000).arg("/c").arg("start").arg(&tt.cell_value(ress, 3)).status().expect("Command");
                 // webbrowser::open(&tt.cell_value(ress, 3)).unwrap();
-                let str = format!("{}：{}", tt.cell_value(ress, 0), tt.cell_value(ress, 1));
+                let str = format!("{} : {}", tt.cell_value(ress, 0), tt.cell_value(ress, 1));
                 show_content(
                     &tt.cell_value(ress, 3),
                     &str,
@@ -404,12 +404,6 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
             }
             true
         }
-        // Event::Resize =>
-        //     {
-        //         println!("resize");
-        //         tr.redraw();
-        //         true
-        //     }
         _ => false,
     });
 
