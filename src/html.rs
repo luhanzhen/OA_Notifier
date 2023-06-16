@@ -42,7 +42,7 @@ pub fn get_content(url: &str) -> Option<(Vec<String>, Vec<String>)> {
             // println!("{}", doc);
             doc = doc.replace("<br>", "\n");
             doc = doc.replace("</p>", "</p>\n");
-            // doc = doc.replace("<span", "  <span");
+            // doc = doc.replace("</span>", "</span>\n");
             let s = String::from('\u{2002}');
             doc = doc.replace(&s, "  ");
 

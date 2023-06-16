@@ -99,7 +99,7 @@ fn main() {
             editable: true,
             ..Default::default()
         });
-
+    
     let (sender_keywords, receiver_keywords) = mpsc::channel();
 
     add_menu(&mut wind, &mut menubar, &mut table, sender_keywords);
@@ -286,13 +286,7 @@ fn main() {
                 table.set_cell_value(n, 4, "");
                 n -= 1;
             }
-            // for i in now.borrow().len()..table.rows() as usize
-            // {
-            //     table.set_cell_value(i as i32, 0, table.cell_value((i - new_items_size) as i32, 0).as_str());
-            //     table.set_cell_value(i as i32, 1, table.cell_value((i - new_items_size) as i32, 1).as_str());
-            //     table.set_cell_value(i as i32, 2, table.cell_value((i - new_items_size) as i32, 2).as_str());
-            //     table.set_cell_value(i as i32, 4, "");
-            // }
+
             //新来的全部填上去
             for i in 0..now.borrow().len() {
                 if now.borrow()[i].is_top {
@@ -347,6 +341,7 @@ fn main() {
                 dialog::message_title("OA Notifier 关于");
                 let message = format!("使用本软件即同意以下内容:
                                     本软件当前版本号为{}。
+                                    本项目受遵受GUN GPL开源协议，子项目也必须遵守此开源协议。
                                     本软件用于自动提醒吉林大学OA更新内容。
                                     双击表格点开信息，右击表格在浏览器中打开网页。
                                     支持搜索，但是搜索不能查找内容，原因是考虑到搜索的快速响应。
