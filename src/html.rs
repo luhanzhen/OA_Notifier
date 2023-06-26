@@ -4,7 +4,6 @@ use std::cell::RefCell;
 use std::str::FromStr;
 use std::sync::mpsc;
 use std::thread;
-// use std::time::SystemTime;
 
 /**
  * <p> @project_name: OANotifier <p/>
@@ -161,15 +160,6 @@ pub fn get_table(vector: &mut RefCell<Vec<Item>>, pages: i32) -> Option<&mut Ref
 
     vector.borrow_mut().clear();
 
-    // vector.borrow_mut().push(Item
-    // {
-    //     title: SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).expect("unexpected").as_micros().to_string(),
-    //     source: "".parse().unwrap(),
-    //     href: "".to_string(),
-    //     is_top: false,
-    //     time: "".parse().unwrap(),
-    // });
-
     for r in rx.iter() {
         let v = r.recv().unwrap();
         if v.len() != 30 {
@@ -239,17 +229,7 @@ pub fn get_update() -> Option<String> {
 pub fn is_reachable(address: &str) -> bool {
     let tcp_target = TcpTarget::from_str(address).unwrap();
     return match tcp_target.check_availability() {
-        Ok(_) => {
-            // println!("Okk {} is {}", tcp_target.get_id(), status);
-            true
-        }
-        Err(_) => {
-            // println!(
-            //     "Err Check failed for {} reason {}",
-            //     tcp_target.get_id(),
-            //     error
-            // );
-            false
-        }
+        Ok(_) => true,
+        Err(_) => false,
     };
 }

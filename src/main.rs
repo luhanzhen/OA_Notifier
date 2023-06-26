@@ -62,7 +62,7 @@ fn main() {
         Some(_) => {}
         None => {
             if vector.borrow().is_empty() {
-                for _ in 0..10 {
+                let _ = (0..10).map(|_| {
                     let item = Item {
                         title: String::from("不能访问OA，网络不可用"),
                         time: String::from("。"),
@@ -71,7 +71,7 @@ fn main() {
                         is_top: false,
                     };
                     vector.borrow_mut().push(item);
-                }
+                });
             }
         }
     };
@@ -81,9 +81,6 @@ fn main() {
     let mut wind = Window::default()
         .with_size(init_width, init_height)
         .with_label("OA Notifier");
-    // wind.set_color(Color::from_rgb(246, 251, 255));
-    // wind.set_selection_color(Color::from_rgb(246, 251, 255));
-    // wind.set_label_color(Color::from_rgb(246, 251, 255));
 
     if fs::metadata("./icon.ico").is_ok() {
         let icon: IcoImage = IcoImage::load(&Path::new("icon.ico")).unwrap();
@@ -99,7 +96,7 @@ fn main() {
             editable: true,
             ..Default::default()
         });
-    
+
     let (sender_keywords, receiver_keywords) = mpsc::channel();
 
     add_menu(&mut wind, &mut menubar, &mut table, sender_keywords);
@@ -156,7 +153,7 @@ fn main() {
             if !is_reachable("oa.jlu.edu.cn:80") {
                 return;
             }
-            match get_table(&mut now, 2) {
+            match get_table(&mut now, 3) {
                 //看看前两页有没有更新
                 Some(_) => {}
                 None => {
@@ -189,9 +186,6 @@ fn main() {
                 {
                     return new_items;
                 }
-                // for k in keys.iter() {
-                //     println!("keywords: {:?}", k);
-                // }
                 let mut filtered: Vec<Item> = vec![];
                 for item in new_items {
                     let content: Vec<String>;
@@ -341,7 +335,6 @@ fn main() {
                 dialog::message_title("OA Notifier 关于");
                 let message = format!("使用本软件即同意以下内容:
                                     本软件当前版本号为{}。
-                                    本项目受遵受GUN GPL开源协议，子项目也必须遵守此开源协议。
                                     本软件用于自动提醒吉林大学OA更新内容。
                                     双击表格点开信息，右击表格在浏览器中打开网页。
                                     支持搜索，但是搜索不能查找内容，原因是考虑到搜索的快速响应。
@@ -353,7 +346,8 @@ fn main() {
                                     本软件每隔十分钟爬取oa网站前若干页的内容。
                                     本软件承诺保护用户隐私，不收集任何信息。
                                     本软件著作权及其解释权归项目作者所有。
-                                    项目源代码及最新版在网站[https://github.com/luhanzhen/OA_Notifier]上。
+                                    本项目受GUN GPL开源协议保护，子项目也必须遵守此开源协议。
+                                    项目源代码及最新版网址是[https://github.com/luhanzhen/OA_Notifier]。
                                     有好的建议或者其它需求可以给我留言。
                                     个人用户享有使用权，作者不对使用者造成的后果负责。
                                     本软件仅供个人使用，不可用于商业盈利目的或者非法目的。

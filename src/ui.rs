@@ -1,14 +1,16 @@
-use crate::html::{get_content, get_update};
+use crate::html::{get_content, get_table, get_update, is_reachable};
 use crate::item::{Item, VERSION};
 use fltk::app::redraw;
 use fltk::enums::{Color, Event, FrameType};
 use fltk::frame::Frame;
-use fltk::image::{JpegImage, PngImage};
+use fltk::image::{IcoImage, JpegImage, PngImage};
 use fltk::menu::MenuBar;
 use fltk::window::DoubleWindow;
 use fltk::{prelude::*, *};
 use fltk_table::SmartTable;
 use std::cell::RefCell;
+use std::fs;
+use std::path::Path;
 use std::sync::mpsc::Sender;
 use webbrowser;
 
@@ -94,6 +96,11 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
             let mut win = window::Window::default()
                 .with_size(width, height)
                 .with_label(title);
+            let mut icon: Option<IcoImage> = None;
+            if fs::metadata("./icon.ico").is_ok() {
+                icon = Some(IcoImage::load(&Path::new("icon.ico")).unwrap());
+            }
+            win.set_icon(icon.clone());
             let mut txt = text::TextDisplay::default()
                 .with_size(win.width(), win.height() - 3)
                 .with_pos(0, 3);
@@ -197,6 +204,7 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
                     }
                     drop(bit_imges);
                     if images_exist {
+                        win_tmp.set_icon(icon.clone());
                         win_tmp.end();
                         win_tmp.show();
                         //确保双击图片可以用浏览器打开网页
@@ -266,13 +274,44 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
     }
 }
 
+fn forced_refresh(table: &mut SmartTable) {
+    let mut now: RefCell<Vec<Item>> = RefCell::new(vec![]);
+
+    if !is_reachable("oa.jlu.edu.cn:80") {
+        return;
+    }
+    match get_table(&mut now, 20) {
+        //看看前两页有没有更新
+        Some(_) => {}
+        None => {
+            return;
+        }
+    }
+    let _ = (0..now.borrow().len()).map(|i| {
+        if now.borrow()[i].is_top {
+            table.set_label_font(enums::Font::Helvetica);
+            table.set_cell_value(i as i32, 0, &format!("[置顶]{}", &now.borrow()[i].title));
+        } else {
+            table.set_label_font(enums::Font::Times);
+            table.set_cell_value(i as i32, 0, &now.borrow()[i].title);
+        }
+        table.set_cell_value(i as i32, 1, &now.borrow()[i].source);
+        table.set_cell_value(i as i32, 2, &now.borrow()[i].time);
+        table.set_cell_value(i as i32, 3, &now.borrow()[i].href);
+        table.set_cell_value(i as i32, 4, "");
+    });
+    table.redraw();
+    drop(now);
+    println!("success!!");
+}
+
 pub fn add_menu(
     wind: &mut DoubleWindow,
     menubar: &mut MenuBar,
     table: &mut SmartTable,
     sender_keywords: Sender<String>,
 ) {
-    menubar.add_choice("搜索  |过滤  ");
+    menubar.add_choice("OA主页  |搜索  |过滤  |刷新  ");
     menubar.set_text_font(enums::Font::TimesBold);
 
     // menubar.set_color(Color::from_rgb(246, 251, 255));
@@ -284,6 +323,12 @@ pub fn add_menu(
     menubar.set_callback(move |c| {
         if let Some(choice) = c.choice() {
             match choice.as_str() {
+                "刷新  " => {
+                        forced_refresh(&mut tt);
+                }
+                "OA主页  " => {
+                    webbrowser::open("https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?channelId=179577").unwrap();
+                }
                 "过滤  " => {
                     dialog::message_title("OA Notifier 过滤");
                     match dialog::input(
@@ -461,14 +506,12 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
     });
 }
 
-//
-//
 pub fn draw_header(txt: &str, x: i32, y: i32, w: i32, h: i32, col: i32) {
     draw::push_clip(x, y, w, h);
     draw::draw_box(FrameType::ThinUpBox, x, y, w, h, Color::FrameDefault);
-    draw::set_draw_color(Color::from_rgb(246, 251, 255));
+    draw::set_draw_color(Color::from_rgb(230, 240, 255));
     draw::draw_rectf(x, y, w, h);
-    draw::set_draw_color(Color::Black);
+    draw::set_draw_color(Color::from_rgb(0, 32, 96));
     draw::set_font(enums::Font::TimesBold, 16);
     if col != 0 {
         draw::draw_text2(txt, x, y, w, h, enums::Align::Left);
@@ -501,7 +544,7 @@ pub fn draw_data(
         draw::set_draw_color(Color::from_rgb(201, 227, 251));
     } else {
         if row % 2 == 1 {
-            draw::set_draw_color(Color::from_rgb(246, 251, 255));
+            draw::set_draw_color(Color::from_rgb(240, 248, 255));
         } else {
             draw::set_draw_color(Color::from_rgb(255, 255, 255));
         }
@@ -522,10 +565,9 @@ pub fn draw_data(
     } else if col == 1 {
         draw::set_draw_color(Color::from_rgb(39, 118, 197));
     } else {
-        draw::set_draw_color(Color::Black);
+        draw::set_draw_color(Color::from_rgb(0, 32, 96));
     }
-    if is_found
-    {
+    if is_found {
         draw::set_draw_color(Color::Red);
     }
     // draw::set_draw_color()
