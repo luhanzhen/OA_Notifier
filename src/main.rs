@@ -51,10 +51,15 @@ fn main() {
     if !is_reachable("oa.jlu.edu.cn:443") {
         return;
     }
+    let app = app::App::default().with_scheme(app::Scheme::Oxy);
+
     let screens = Screen::all_screens();
 
     let init_width: i32 = (screens[0].w() as f32 * 0.5) as i32;
     let init_height: i32 = (screens[0].h() as f32 * 0.5) as i32;
+
+    let mut dialog = get_dialog(init_width, init_height);
+    dialog.show();
 
     let mut vector: RefCell<Vec<Item>> = RefCell::new(vec![]);
 
@@ -76,10 +81,9 @@ fn main() {
         }
     };
 
-    let app = app::App::default().with_scheme(app::Scheme::Oxy);
-
     let mut wind = Window::default()
         .with_size(init_width, init_height)
+        .center_screen()
         .with_label("OA Notifier");
 
     if fs::metadata("./icon.ico").is_ok() {
@@ -87,6 +91,7 @@ fn main() {
         wind.set_icon(Some(icon));
     }
     let mut menubar = menu::MenuBar::new(-2, 0, init_width + 1, 27, "");
+
     let mut table = SmartTable::default()
         .with_size(wind.width() - 2, wind.height() - 25)
         .with_pos(0, 24)
@@ -99,11 +104,20 @@ fn main() {
 
     let (sender_keywords, receiver_keywords) = mpsc::channel();
 
-    add_menu(&mut wind, &mut menubar, &mut table, sender_keywords);
+    add_menu(
+        &mut wind,
+        &mut menubar,
+        &mut table,
+        sender_keywords,
+        init_width,
+        init_height,
+    );
 
-    add_table(&mut table, &mut wind, &mut vector);
+    add_table(&mut table, &mut wind, &mut vector, init_width, init_height);
 
     wind.end();
+    dialog.hide();
+    drop(dialog);
     wind.show();
 
     drop(vector);
@@ -326,7 +340,10 @@ fn main() {
                 if !wind.visible() {
                     wind.platform_show();
                 }
-                check_update(wind.x() + wind.width() / 3, wind.y() + wind.height() / 3)
+                check_update(
+                    init_width / 2 + wind.width() / 3,
+                    init_height / 2 + wind.height() / 3,
+                )
             }
             if event.id == about_i.id() {
                 if !wind.visible() {
@@ -353,8 +370,8 @@ fn main() {
                                     本软件仅供个人使用，不可用于商业盈利目的或者非法目的。
                                     请主动遵守国家法律法规和学校的有关规定，非法或者违规行为造成的法律责任和后果自负。", VERSION);
                 dialog::message(
-                    wind.x() + wind.width() / 4,
-                    wind.y() + wind.height() / 4,
+                    init_width / 2 + wind.width() / 4,
+                    init_height / 2 + wind.height() / 4,
                     message.as_str(),
                 );
             }
@@ -366,5 +383,6 @@ fn main() {
     }
 
     app.run().unwrap();
+
     drop(_guard);
 }

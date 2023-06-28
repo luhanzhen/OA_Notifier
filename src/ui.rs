@@ -84,6 +84,27 @@ pub fn check_update(x: i32, y: i32) {
     }
 }
 
+pub fn get_dialog(init_width: i32, init_height: i32) -> DoubleWindow {
+    let mut win = window::Window::default()
+        .with_size(init_width, init_height)
+        .with_label("OA Notifier [loading....]")
+        .center_screen();
+    let mut icon: Option<IcoImage> = None;
+    if fs::metadata("./icon.ico").is_ok() {
+        icon = Some(IcoImage::load(&Path::new("icon.ico")).unwrap());
+    }
+
+    // let btn = button::Button::new(0, 0, 160, 40, "正在获取OA内容。。。");
+    // btn.center_of(&win);
+    // btn.set_color(Color::White);
+
+    win.set_icon(icon.clone());
+    win.set_color(Color::White);
+    win.end();
+    // win.platform_show();
+    return win;
+}
+
 fn show_content(url: &String, title: &String, width: i32, height: i32) {
     match get_content(url) {
         Some((content, images)) => {
@@ -95,7 +116,13 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
 
             let mut win = window::Window::default()
                 .with_size(width, height)
+                .with_pos(width / 12, height / 12)
                 .with_label(title);
+            win.set_color(Color::from_rgb(246, 251, 255));
+            win.set_label_color(Color::from_rgb(0, 32, 96));
+            win.set_label_font(enums::Font::HelveticaBold);
+            win.set_label_size(16);
+            win.make_resizable(true);
             let mut icon: Option<IcoImage> = None;
             if fs::metadata("./icon.ico").is_ok() {
                 icon = Some(IcoImage::load(&Path::new("icon.ico")).unwrap());
@@ -124,10 +151,12 @@ fn show_content(url: &String, title: &String, width: i32, height: i32) {
 
             txt.set_buffer(buf);
             txt.set_color(Color::from_rgb(246, 251, 255));
-            win.set_color(Color::from_rgb(246, 251, 255));
+            txt.set_text_color(Color::from_rgb(0, 32, 96));
+            txt.set_text_font(enums::Font::HelveticaBold);
 
+            txt.set_text_size(15);
             txt.wrap_mode(text::WrapMode::AtBounds, 0);
-            win.make_resizable(true);
+
             win.end();
             win.show();
             let mut vector_win_tmp = vec![];
@@ -310,21 +339,23 @@ pub fn add_menu(
     menubar: &mut MenuBar,
     table: &mut SmartTable,
     sender_keywords: Sender<String>,
+    width: i32,
+    height: i32,
 ) {
     menubar.add_choice("OA主页  |搜索  |过滤  |刷新  ");
     menubar.set_text_font(enums::Font::TimesBold);
 
     // menubar.set_color(Color::from_rgb(246, 251, 255));
     menubar.set_color(Color::White);
-    let windx = wind.x() + wind.height() / 5;
-    let windy = wind.y() + wind.width() / 5;
+    let windx = width / 2 + wind.height() / 10;
+    let windy = height / 2 + wind.width() / 10;
     let mut tt = table.clone();
     let mut last_keywords = String::from(""); //记住上次设置的关键字
     menubar.set_callback(move |c| {
         if let Some(choice) = c.choice() {
             match choice.as_str() {
                 "刷新  " => {
-                        forced_refresh(&mut tt);
+                    forced_refresh(&mut tt);
                 }
                 "OA主页  " => {
                     webbrowser::open("https://oa.jlu.edu.cn/defaultroot/PortalInformation!jldxList.action?channelId=179577").unwrap();
@@ -378,7 +409,13 @@ pub fn add_menu(
     });
 }
 
-pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut RefCell<Vec<Item>>) {
+pub fn add_table(
+    table: &mut SmartTable,
+    wind: &mut DoubleWindow,
+    vector: &mut RefCell<Vec<Item>>,
+    width: i32,
+    height: i32,
+) {
     table.set_row_resize(true);
     table.set_col_resize(true);
     table.set_col_header(true);
@@ -424,8 +461,8 @@ pub fn add_table(table: &mut SmartTable, wind: &mut DoubleWindow, vector: &mut R
                 show_content(
                     &tt.cell_value(ress, 3),
                     &str,
-                    (tr.width() as f32 * 0.618) as i32,
-                    (tr.height() as f32 * 0.618) as i32,
+                    (width as f32 * 0.8) as i32,
+                    (height as f32 * 0.8) as i32,
                 );
             }
             if app::event_clicks_num() == 0 {
