@@ -14,65 +14,61 @@ use std::thread;
  */
 
 pub fn get_content(url: &str) -> Option<(Vec<String>, Vec<String>)> {
-    match reqwest::blocking::get(url) {
-        Ok(webpage) => {
-            let response = webpage.text().unwrap();
-            if response.is_empty() {
-                return None;
-            }
-            let pre = "https://oa.jlu.edu.cn/";
-
-            let document = scraper::Html::parse_document(&response);
-
-            let content_selector1 =
-                scraper::Selector::parse(r#"div[class="content_font fontsize immmge"]"#).unwrap();
-            let content_selector2 =
-                scraper::Selector::parse(r#"div[class="content_font"]"#).unwrap();
-
-            let img_selector = scraper::Selector::parse("img").unwrap();
-
-            let element = match document.select(&content_selector1).next() {
-                Some(ele) => ele,
-                None => document.select(&content_selector2).next().unwrap(),
-            };
-            // let element = document.select(&content_selector2).next().unwrap();
-
-            let mut doc = element.inner_html();
-            // println!("{}", doc);
-            doc = doc.replace("<br>", "\n");
-            doc = doc.replace("</p>", "</p>\n");
-            // doc = doc.replace("</span>", "</span>\n");
-            let s = String::from('\u{2002}');
-            doc = doc.replace(&s, "  ");
-
-            let sub_document = scraper::Html::parse_document(&doc);
-            let mut imges = vec![];
-
-            for e in sub_document.select(&img_selector) {
-                let img = format!("{}{}", pre, e.value().attr("src").unwrap());
-                // println!("{}", img);
-                imges.push(img);
-            }
-            let mut strings = vec![];
-            for e in sub_document.tree {
-                if e.is_text() {
-                    let text = e.as_text().unwrap().text.to_string();
-                    // text = format!("  {}", text);
-                    strings.push(text);
-                }
-            }
-
-            return Some((strings, imges));
+    if let Ok(webpage) = reqwest::blocking::get(url) {
+        let response = webpage.text().unwrap();
+        if response.is_empty() {
+            return None;
         }
-        Err(_) => {}
+        let pre = "https://oa.jlu.edu.cn/";
+
+        let document = scraper::Html::parse_document(&response);
+
+        let content_selector1 =
+            scraper::Selector::parse(r#"div[class="content_font fontsize immmge"]"#).unwrap();
+        let content_selector2 = scraper::Selector::parse(r#"div[class="content_font"]"#).unwrap();
+
+        let img_selector = scraper::Selector::parse("img").unwrap();
+
+        let element = match document.select(&content_selector1).next() {
+            Some(ele) => ele,
+            None => document.select(&content_selector2).next().unwrap(),
+        };
+        // let element = document.select(&content_selector2).next().unwrap();
+
+        let mut doc = element.inner_html();
+        // println!("{}", doc);
+        doc = doc.replace("<br>", "\n");
+        doc = doc.replace("</p>", "</p>\n");
+        // doc = doc.replace("</span>", "</span>\n");
+        let s = String::from('\u{2002}');
+        doc = doc.replace(&s, "  ");
+
+        let sub_document = scraper::Html::parse_document(&doc);
+        let mut imges = vec![];
+
+        for e in sub_document.select(&img_selector) {
+            let img = format!("{}{}", pre, e.value().attr("src").unwrap());
+            // println!("{}", img);
+            imges.push(img);
+        }
+        let mut strings = vec![];
+        for e in sub_document.tree {
+            if e.is_text() {
+                let text = e.as_text().unwrap().text.to_string();
+                // text = format!("  {}", text);
+                strings.push(text);
+            }
+        }
+
+        return Some((strings, imges));
     };
-    return None;
+    None
 }
 
-fn get_title_page(url: String) -> Option<Box<Vec<Item>>> {
+fn get_title_page(url: String) -> Option<Vec<Item>> {
     // let pre = String::from("https://oa.jlu.edu.cn/defaultroot/");
     let pre = "https://oa.jlu.edu.cn/defaultroot/";
-    let mut vec: Box<Vec<Item>> = Box::new(Vec::new());
+    let mut vec: Vec<Item> = Vec::new();
     match reqwest::blocking::get(url) {
         Ok(webpage) => {
             let response = webpage.text().unwrap();
@@ -118,11 +114,9 @@ fn get_title_page(url: String) -> Option<Box<Vec<Item>>> {
                 };
                 vec.push(a);
             }
-            return Some(vec);
+            Some(vec)
         }
-        Err(_) => {
-            return None;
-        }
+        Err(_) => None,
     }
 }
 
@@ -144,12 +138,9 @@ pub fn get_table(vector: &mut RefCell<Vec<Item>>, pages: i32) -> Option<&mut Ref
     for i in 0..url.len() {
         let tt = tx[i].clone();
         let uu = url[i].clone();
-        let t = thread::spawn(move || match get_title_page(uu) {
-            Some(vec) => {
+        let t = thread::spawn(move || {
+            if let Some(vec) = get_title_page(uu) {
                 tt.send(vec).unwrap();
-            }
-            None => {
-                return;
             }
         });
         thread.push(t);
@@ -176,7 +167,7 @@ pub fn get_table(vector: &mut RefCell<Vec<Item>>, pages: i32) -> Option<&mut Ref
 }
 
 pub fn get_update() -> Option<String> {
-    return if is_reachable("192.168.1.100:7788") {
+    if is_reachable("192.168.1.100:7788") {
         match reqwest::blocking::get(
             "http://192.168.1.100:7788/zhenluhan/OANotifier/raw/branch/version2/Version_file",
         ) {
@@ -223,13 +214,14 @@ pub fn get_update() -> Option<String> {
         }
     } else {
         None
-    };
+    }
 }
 
 pub fn is_reachable(address: &str) -> bool {
     let tcp_target = TcpTarget::from_str(address).unwrap();
-    return match tcp_target.check_availability() {
-        Ok(_) => true,
-        Err(_) => false,
-    };
+    // match tcp_target.check_availability() {
+    //     Ok(_) => true,
+    //     Err(_) => false,
+    // }
+    tcp_target.check_availability().is_ok()
 }

@@ -45,22 +45,20 @@ pub fn check_update(x: i32, y: i32) {
                             None => usize::MAX,
                         };
                         let mess = if third == usize::MAX || four == usize::MAX {
-                            format!("有最新版，你要更新吗？")
+                            "有最新版，你要更新吗？".to_string()
                         } else {
                             let update_log = &new_version[(third + 9)..four];
                             format!("有最新版，你要更新吗？{}", update_log)
                         };
                         dialog::message_title("OA Notifier 更新");
-                        match dialog::choice2(x, y, mess.as_str(), "算了", "在浏览器中下载", "")
+                        if let Some(choice) =
+                            dialog::choice2(x, y, mess.as_str(), "算了", "在浏览器中下载", "")
                         {
-                            Some(choice) => {
-                                if choice == 1 {
-                                    webbrowser::open(str).unwrap();
-                                    dialog::message_title("OA Notifier 更新");
-                                    dialog::message(x, y, "下载最新版，删除现在的软件即可。");
-                                }
+                            if choice == 1 {
+                                webbrowser::open(str).unwrap();
+                                dialog::message_title("OA Notifier 更新");
+                                dialog::message(x, y, "下载最新版，删除现在的软件即可。");
                             }
-                            None => {}
                         }
                     } else {
                         dialog::message_title("OA Notifier 更新");
@@ -91,215 +89,212 @@ pub fn get_dialog(init_width: i32, init_height: i32) -> DoubleWindow {
         .center_screen();
     let mut icon: Option<IcoImage> = None;
     if fs::metadata("./icon.ico").is_ok() {
-        icon = Some(IcoImage::load(&Path::new("icon.ico")).unwrap());
+        icon = Some(IcoImage::load(Path::new("icon.ico")).unwrap());
     }
 
     // let btn = button::Button::new(0, 0, 160, 40, "正在获取OA内容。。。");
     // btn.center_of(&win);
     // btn.set_color(Color::White);
 
-    win.set_icon(icon.clone());
+    win.set_icon(icon);
     win.set_color(Color::White);
     win.end();
     // win.platform_show();
-    return win;
+    win
 }
 
-fn show_content(url: &String, title: &String, width: i32, height: i32) {
-    match get_content(url) {
-        Some((content, images)) => {
-            let mut buf = text::TextBuffer::default();
-            for e in content.iter() {
-                buf.append(e);
-            }
-            buf.line_start(0);
-
-            let mut win = window::Window::default()
-                .with_size(width, height)
-                .with_pos(width / 12, height / 12)
-                .with_label(title);
-            win.set_color(Color::from_rgb(246, 251, 255));
-            win.set_label_color(Color::from_rgb(0, 32, 96));
-            win.set_label_font(enums::Font::HelveticaBold);
-            win.set_label_size(16);
-            win.make_resizable(true);
-            let mut icon: Option<IcoImage> = None;
-            if fs::metadata("./icon.ico").is_ok() {
-                icon = Some(IcoImage::load(&Path::new("icon.ico")).unwrap());
-            }
-            win.set_icon(icon.clone());
-            let mut txt = text::TextDisplay::default()
-                .with_size(win.width(), win.height() - 3)
-                .with_pos(0, 3);
-
-            //为了下载附件，可能有多个附件
-            // let mut btn = Frame::default()
-            //     .with_label("Click")
-            //     .below_of(&txt, 0)
-            //     .with_size(100, 30);
-            // btn.set_color(Color::from_rgb(246, 251, 255));
-            //
-            // btn.handle(move |tr, event| match event {
-            //     Event::Released => {
-            //         if app::event_clicks_num() == 0 {
-            //             println!("btn1 is checked");
-            //         }
-            //         true
-            //     }
-            //     _ => false,
-            // });
-
-            txt.set_buffer(buf);
-            txt.set_color(Color::from_rgb(246, 251, 255));
-            txt.set_text_color(Color::from_rgb(0, 32, 96));
-            txt.set_text_font(enums::Font::HelveticaBold);
-
-            txt.set_text_size(15);
-            txt.wrap_mode(text::WrapMode::AtBounds, 0);
-
-            win.end();
-            win.show();
-            let mut vector_win_tmp = vec![];
-            if !images.is_empty() {
-                for (i_size, imgs) in images.iter().enumerate() {
-                    let bit_imges = reqwest::blocking::get(imgs)
-                        .unwrap()
-                        .bytes()
-                        .unwrap()
-                        .to_vec();
-                    let images_exist;
-                    let title_tmp = format!("{}-img[{}]", title, i_size + 1);
-                    let mut win_tmp = window::Window::default()
-                        .with_size(
-                            (width as f32 * 0.618) as i32,
-                            (height as f32 * 0.618) as i32,
-                        )
-                        .with_label(title_tmp.as_str());
-
-                    let mut frame = Frame::default().with_pos(0, 0);
-                    frame.set_frame(FrameType::EngravedBox);
-
-                    win_tmp.make_resizable(true);
-
-                    if imgs.contains("png") {
-                        let mut image = PngImage::from_data(bit_imges.as_slice()).unwrap();
-
-                        let scala = image.width() as f32 / image.height() as f32;
-                        let w: i32;
-                        let h: i32;
-                        if win_tmp.width() < win_tmp.height() {
-                            h = win_tmp.height();
-                            w = (h as f32 * scala) as i32;
-                        } else {
-                            w = win_tmp.width();
-                            h = (w as f32 / scala) as i32;
-                        }
-                        // println!("{w},{h}");
-                        frame.set_size(w, h);
-                        win_tmp.set_size(w, h);
-                        let win_tmp_tmp = win_tmp.clone();
-                        frame.draw(move |f| {
-                            f.set_size(win_tmp_tmp.width(), win_tmp_tmp.height());
-                            image.scale(f.w(), f.h(), true, true);
-                            image.draw(f.x(), f.y(), f.w(), f.h());
-                        });
-
-                        images_exist = true;
-                    } else if imgs.contains("jpg") {
-                        let mut image = JpegImage::from_data(bit_imges.as_slice()).unwrap();
-                        let scala = image.width() as f32 / image.height() as f32;
-                        let w;
-                        let h;
-                        if win_tmp.width() < win_tmp.height() {
-                            h = win_tmp.height();
-                            w = (h as f32 * scala) as i32;
-                        } else {
-                            w = win_tmp.width();
-                            h = (w as f32 / scala) as i32;
-                        }
-                        // println!("{w},{h}");
-                        frame.set_size(w, h);
-                        win_tmp.set_size(w, h);
-                        let win_tmp_tmp = win_tmp.clone();
-                        frame.draw(move |f| {
-                            f.set_size(win_tmp_tmp.width(), win_tmp_tmp.height());
-                            image.scale(f.w(), f.h(), true, true);
-                            image.draw(f.x(), f.y(), f.w(), f.h());
-                        });
-
-                        images_exist = true;
-                    } else {
-                        images_exist = false;
-                    }
-                    drop(bit_imges);
-                    if images_exist {
-                        win_tmp.set_icon(icon.clone());
-                        win_tmp.end();
-                        win_tmp.show();
-                        //确保双击图片可以用浏览器打开网页
-                        let uurl = url.clone();
-                        win_tmp.handle(move |_, event| match event {
-                            Event::Released => {
-                                if app::event_clicks_num() == 1 {
-                                    webbrowser::open(&uurl).unwrap()
-                                }
-                                true
-                            }
-                            _ => false,
-                        });
-                        vector_win_tmp.push(win_tmp.clone());
-                    }
-                }
-            }
-
-            // 确保关闭窗口可以让图片窗口跟着关闭
-            let mut vector_win_tmp_tmp = vector_win_tmp.clone();
-            win.set_callback(move |_win| {
-                if app::event() == Event::Close {
-                    // println!("Close Close!!!!!");
-                    for w in &mut vector_win_tmp_tmp {
-                        w.clear();
-                        w.hide();
-                    }
-                    _win.clear();
-                    _win.platform_hide();
-                }
-            });
-            win.handle(move |_win, event| match event {
-                Event::Hide => {
-                    // println!("Hide Hide!!!!!");
-                    for w in &mut vector_win_tmp {
-                        w.hide();
-                    }
-                    true
-                }
-                Event::Show => {
-                    // println!("Show Show!!!!!");
-                    for w in &mut vector_win_tmp {
-                        w.show();
-                    }
-                    true
-                }
-
-                _ => {
-                    // println!("!!!!!{:#}",event);
-                    false
-                }
-            });
-
-            //确保双击文字可以用浏览器打开网页
-            let uurl = url.clone();
-            txt.handle(move |_, event| match event {
-                Event::Released => {
-                    if app::event_clicks_num() == 1 {
-                        webbrowser::open(&uurl).unwrap()
-                    }
-                    true
-                }
-                _ => false,
-            });
+fn show_content(url: &str, title: &String, width: i32, height: i32) {
+    if let Some((content, images)) = get_content(url) {
+        let mut buf = text::TextBuffer::default();
+        for e in content.iter() {
+            buf.append(e);
         }
-        None => {}
+        buf.line_start(0);
+
+        let mut win = window::Window::default()
+            .with_size(width, height)
+            .with_pos(width / 12, height / 12)
+            .with_label(title);
+        win.set_color(Color::from_rgb(246, 251, 255));
+        win.set_label_color(Color::from_rgb(0, 32, 96));
+        win.set_label_font(enums::Font::HelveticaBold);
+        win.set_label_size(16);
+        win.make_resizable(true);
+        let mut icon: Option<IcoImage> = None;
+        if fs::metadata("./icon.ico").is_ok() {
+            icon = Some(IcoImage::load(Path::new("icon.ico")).unwrap());
+        }
+        win.set_icon(icon.clone());
+        let mut txt = text::TextDisplay::default()
+            .with_size(win.width(), win.height() - 3)
+            .with_pos(0, 3);
+
+        //为了下载附件，可能有多个附件
+        // let mut btn = Frame::default()
+        //     .with_label("Click")
+        //     .below_of(&txt, 0)
+        //     .with_size(100, 30);
+        // btn.set_color(Color::from_rgb(246, 251, 255));
+        //
+        // btn.handle(move |tr, event| match event {
+        //     Event::Released => {
+        //         if app::event_clicks_num() == 0 {
+        //             println!("btn1 is checked");
+        //         }
+        //         true
+        //     }
+        //     _ => false,
+        // });
+
+        txt.set_buffer(buf);
+        txt.set_color(Color::from_rgb(246, 251, 255));
+        txt.set_text_color(Color::from_rgb(0, 32, 96));
+        txt.set_text_font(enums::Font::HelveticaBold);
+
+        txt.set_text_size(15);
+        txt.wrap_mode(text::WrapMode::AtBounds, 0);
+
+        win.end();
+        win.show();
+        let mut vector_win_tmp = vec![];
+        if !images.is_empty() {
+            for (i_size, imgs) in images.iter().enumerate() {
+                let bit_imges = reqwest::blocking::get(imgs)
+                    .unwrap()
+                    .bytes()
+                    .unwrap()
+                    .to_vec();
+                let images_exist;
+                let title_tmp = format!("{}-img[{}]", title, i_size + 1);
+                let mut win_tmp = window::Window::default()
+                    .with_size(
+                        (width as f32 * 0.618) as i32,
+                        (height as f32 * 0.618) as i32,
+                    )
+                    .with_label(title_tmp.as_str());
+
+                let mut frame = Frame::default().with_pos(0, 0);
+                frame.set_frame(FrameType::EngravedBox);
+
+                win_tmp.make_resizable(true);
+
+                if imgs.contains("png") {
+                    let mut image = PngImage::from_data(bit_imges.as_slice()).unwrap();
+
+                    let scala = image.width() as f32 / image.height() as f32;
+                    let w: i32;
+                    let h: i32;
+                    if win_tmp.width() < win_tmp.height() {
+                        h = win_tmp.height();
+                        w = (h as f32 * scala) as i32;
+                    } else {
+                        w = win_tmp.width();
+                        h = (w as f32 / scala) as i32;
+                    }
+                    // println!("{w},{h}");
+                    frame.set_size(w, h);
+                    win_tmp.set_size(w, h);
+                    let win_tmp_tmp = win_tmp.clone();
+                    frame.draw(move |f| {
+                        f.set_size(win_tmp_tmp.width(), win_tmp_tmp.height());
+                        image.scale(f.w(), f.h(), true, true);
+                        image.draw(f.x(), f.y(), f.w(), f.h());
+                    });
+
+                    images_exist = true;
+                } else if imgs.contains("jpg") {
+                    let mut image = JpegImage::from_data(bit_imges.as_slice()).unwrap();
+                    let scala = image.width() as f32 / image.height() as f32;
+                    let w;
+                    let h;
+                    if win_tmp.width() < win_tmp.height() {
+                        h = win_tmp.height();
+                        w = (h as f32 * scala) as i32;
+                    } else {
+                        w = win_tmp.width();
+                        h = (w as f32 / scala) as i32;
+                    }
+                    // println!("{w},{h}");
+                    frame.set_size(w, h);
+                    win_tmp.set_size(w, h);
+                    let win_tmp_tmp = win_tmp.clone();
+                    frame.draw(move |f| {
+                        f.set_size(win_tmp_tmp.width(), win_tmp_tmp.height());
+                        image.scale(f.w(), f.h(), true, true);
+                        image.draw(f.x(), f.y(), f.w(), f.h());
+                    });
+
+                    images_exist = true;
+                } else {
+                    images_exist = false;
+                }
+                drop(bit_imges);
+                if images_exist {
+                    win_tmp.set_icon(icon.clone());
+                    win_tmp.end();
+                    win_tmp.show();
+                    //确保双击图片可以用浏览器打开网页
+                    let uurl = url.to_owned();
+                    win_tmp.handle(move |_, event| match event {
+                        Event::Released => {
+                            if app::event_clicks_num() == 1 {
+                                webbrowser::open(&uurl).unwrap()
+                            }
+                            true
+                        }
+                        _ => false,
+                    });
+                    vector_win_tmp.push(win_tmp.clone());
+                }
+            }
+        }
+
+        // 确保关闭窗口可以让图片窗口跟着关闭
+        let mut vector_win_tmp_tmp = vector_win_tmp.clone();
+        win.set_callback(move |_win| {
+            if app::event() == Event::Close {
+                // println!("Close Close!!!!!");
+                for w in &mut vector_win_tmp_tmp {
+                    w.clear();
+                    w.hide();
+                }
+                _win.clear();
+                _win.platform_hide();
+            }
+        });
+        win.handle(move |_win, event| match event {
+            Event::Hide => {
+                // println!("Hide Hide!!!!!");
+                for w in &mut vector_win_tmp {
+                    w.hide();
+                }
+                true
+            }
+            Event::Show => {
+                // println!("Show Show!!!!!");
+                for w in &mut vector_win_tmp {
+                    w.show();
+                }
+                true
+            }
+
+            _ => {
+                // println!("!!!!!{:#}",event);
+                false
+            }
+        });
+
+        //确保双击文字可以用浏览器打开网页
+        let uurl = url.to_owned();
+        txt.handle(move |_, event| match event {
+            Event::Released => {
+                if app::event_clicks_num() == 1 {
+                    webbrowser::open(&uurl).unwrap()
+                }
+                true
+            }
+            _ => false,
+        });
     }
 }
 
@@ -362,19 +357,18 @@ pub fn add_menu(
                 }
                 "过滤  " => {
                     dialog::message_title("OA Notifier 过滤");
-                    match dialog::input(
+                    if let Some(code) =  dialog::input(
                         windx,
                         windy,
                         "输入要过滤的内容，用空格隔开:",
                         last_keywords.as_str(),
                     ) {
-                        Some(code) => {
+
                             // println!("{}", code);
                             last_keywords = code.clone(); //更新关键字
                             sender_keywords.send(code).unwrap();
                             // 发送刚才输入的关键字
-                        }
-                        None => {}
+
                     }
                 }
                 "搜索  " => {
@@ -382,8 +376,8 @@ pub fn add_menu(
                         tt.set_cell_value(i, 4, "");
                     }
                     dialog::message_title("OA Notifier 搜索");
-                    match dialog::input(windx, windy, "输入要查找的内容:", "") {
-                        Some(code) => {
+                    if let  Some(code) =  dialog::input(windx, windy, "输入要查找的内容:", "") {
+
                             if !code.is_empty() {
                                 // let code = String::from("吉林");
                                 // println!("Finding...{}", code);
@@ -394,13 +388,11 @@ pub fn add_menu(
                                         || tt.cell_value(i, 2).contains(&code)
                                     {
                                         // println!("Found == {}", i);
-                                        tt.set_cell_value(i as i32, 4, "f");
+                                        tt.set_cell_value(i, 4, "f");
                                         tt.redraw();
                                     }
                                 }
                             }
-                        }
-                        None => {}
                     }
                 }
                 _ => unreachable!(),
@@ -490,18 +482,14 @@ pub fn add_table(
     });
 
     for i in 0..vector.borrow().len() {
-        if vector.borrow()[i as usize].is_top {
-            table.set_cell_value(
-                i as i32,
-                0,
-                &format!("[置顶]{}", &vector.borrow()[i as usize].title),
-            );
+        if vector.borrow()[i].is_top {
+            table.set_cell_value(i as i32, 0, &format!("[置顶]{}", &vector.borrow()[i].title));
         } else {
-            table.set_cell_value(i as i32, 0, &vector.borrow()[i as usize].title);
+            table.set_cell_value(i as i32, 0, &vector.borrow()[i].title);
         }
-        table.set_cell_value(i as i32, 1, &vector.borrow()[i as usize].source);
-        table.set_cell_value(i as i32, 2, &vector.borrow()[i as usize].time);
-        table.set_cell_value(i as i32, 3, &vector.borrow()[i as usize].href);
+        table.set_cell_value(i as i32, 1, &vector.borrow()[i].source);
+        table.set_cell_value(i as i32, 2, &vector.borrow()[i].time);
+        table.set_cell_value(i as i32, 3, &vector.borrow()[i].href);
     }
     let mut tt = table.clone();
 
@@ -514,15 +502,12 @@ pub fn add_table(
         table::TableContext::Cell => {
             draw_data(
                 tt.cell_value(row, col).as_str(),
-                x,
-                y,
-                w,
-                h,
+                (x, y, w, h),
                 row,
                 col,
                 t.is_selected(row, col),
                 tt.cell_value(row, 0).contains("置顶"),
-                tt.cell_value(row, 4).contains("f"),
+                tt.cell_value(row, 4).contains('f'),
             );
         }
         // Data in cells
@@ -563,10 +548,7 @@ pub fn draw_header(txt: &str, x: i32, y: i32, w: i32, h: i32, col: i32) {
 // The selected flag sets the color of the cell to a grayish color, otherwise white
 pub fn draw_data(
     txt: &str,
-    x: i32,
-    y: i32,
-    w: i32,
-    h: i32,
+    (x, y, w, h): (i32, i32, i32, i32),
     row: i32,
     col: i32,
     selected: bool,
@@ -579,13 +561,12 @@ pub fn draw_data(
     draw::push_clip(x, y, w, h);
     if selected {
         draw::set_draw_color(Color::from_rgb(201, 227, 251));
+    } else if row % 2 == 1 {
+        draw::set_draw_color(Color::from_rgb(240, 248, 255));
     } else {
-        if row % 2 == 1 {
-            draw::set_draw_color(Color::from_rgb(240, 248, 255));
-        } else {
-            draw::set_draw_color(Color::from_rgb(255, 255, 255));
-        }
+        draw::set_draw_color(Color::from_rgb(255, 255, 255));
     }
+
     draw::draw_rectf(x, y, w, h);
 
     if is_top && col == 0 {

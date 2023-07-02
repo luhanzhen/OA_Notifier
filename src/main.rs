@@ -87,7 +87,7 @@ fn main() {
         .with_label("OA Notifier");
 
     if fs::metadata("./icon.ico").is_ok() {
-        let icon: IcoImage = IcoImage::load(&Path::new("icon.ico")).unwrap();
+        let icon: IcoImage = IcoImage::load(Path::new("icon.ico")).unwrap();
         wind.set_icon(Some(icon));
     }
     let mut menubar = menu::MenuBar::new(-2, 0, init_width + 1, 27, "");
@@ -117,15 +117,15 @@ fn main() {
 
     wind.end();
     dialog.hide();
-    drop(dialog);
-    wind.show();
 
+    wind.show();
+    // drop(dialog);
     drop(vector);
 
     wind.set_callback(move |_win| {
         if app::event() == enums::Event::Close {
             dialog::message_title("退出确认?");
-            match dialog::choice2(
+            if let Some(choice) = dialog::choice2(
                 _win.x() + _win.width() / 3 * 2,
                 _win.y() + 10,
                 "确定要退出吗？",
@@ -133,15 +133,12 @@ fn main() {
                 "隐藏",
                 "确实",
             ) {
-                Some(choice) => {
-                    // println!("full screen!!!{choice}");
-                    if choice == 2 {
-                        app::quit();
-                    } else if choice == 1 {
-                        _win.platform_hide();
-                    }
+                // println!("full screen!!!{choice}");
+                if choice == 2 {
+                    app::quit();
+                } else if choice == 1 {
+                    _win.platform_hide();
                 }
-                None => {}
             }
         }
 
@@ -158,11 +155,8 @@ fn main() {
 
         timer.schedule_repeating(chrono::Duration::seconds(300), move || {
             let mut now: RefCell<Vec<Item>> = RefCell::new(vec![]);
-            match receiver_keywords.try_recv() {
-                Ok(keyword) => {
-                    keywords = keyword;
-                }
-                Err(_) => {}
+            if let Ok(keyword) = receiver_keywords.try_recv() {
+                keywords = keyword;
             }
             if !is_reachable("oa.jlu.edu.cn:80") {
                 return;
@@ -190,7 +184,7 @@ fn main() {
                         }
                     }
                 }
-                return new_items;
+                new_items
             };
 
             let filter = |new_items: Vec<Item>, keyword: String| -> Vec<Item> {
@@ -202,15 +196,10 @@ fn main() {
                 }
                 let mut filtered: Vec<Item> = vec![];
                 for item in new_items {
-                    let content: Vec<String>;
-                    match get_content(item.href.as_str()) {
-                        Some((con, _)) => {
-                            content = con;
-                        }
-                        None => {
-                            content = Vec::new();
-                        }
-                    }
+                    let content: Vec<String> = match get_content(item.href.as_str()) {
+                        Some((con, _)) => con,
+                        None => Vec::new(),
+                    };
                     let mut found = false;
                     for key in keys.iter() {
                         if item.title.as_str().contains(key)
@@ -236,7 +225,7 @@ fn main() {
                         filtered.push(item.clone());
                     }
                 }
-                return filtered;
+                filtered
             };
 
             let new_items = changed(&mut table, &now.borrow());
@@ -251,20 +240,14 @@ fn main() {
                     // println!("改变了");
                     filtered.reverse();
                     for title in filtered {
-                        match Notification::new()
+                        if Notification::new()
                             .appname("OA Notifier")
                             .subtitle(title.source.as_str())
                             .body(title.title.as_str())
                             .auto_icon()
                             .show()
-                        {
-                            Ok(_) => {
-                                // println!("Notification successfully");
-                            }
-                            Err(_) => {
-                                // println!("Notification error");
-                            }
-                        }
+                            .is_ok()
+                        {}
                     }
                 }
             });
@@ -377,7 +360,7 @@ fn main() {
             }
         }
 
-        if let Ok(_) = TrayEvent::receiver().try_recv() {
+        if TrayEvent::receiver().try_recv().is_ok() {
             wind.platform_show();
         }
     }
