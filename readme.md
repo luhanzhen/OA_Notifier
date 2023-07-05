@@ -2,7 +2,7 @@
 # 😀 😁 This is an app for the JLU OA notification.
 
 
-[![OA](https://img.shields.io/badge/OA_Notifier-rust-red)](https://github.com/luhanzhen/OA_Notifier)
+[![OA](https://img.shields.io/badge/OA_Notifier-1.5.4-red)](https://github.com/luhanzhen/OA_Notifier)
 [![MSRV](https://img.shields.io/badge/rustc-1.70.0-90c541.svg)](https://blog.rust-lang.org/2023/06/01/Rust-1.70.0.html)
 [![License](https://img.shields.io/badge/License-GPL-blue)](https://github.com/luhanzhen/OA_Notifier/blob/version2/LICENSE)
 [![JLUOA](https://img.shields.io/badge/JLU_OA-green)](https://oa.jlu.edu.cn/defaultroot/login.jsp?access=oa)
