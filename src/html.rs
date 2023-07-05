@@ -6,11 +6,11 @@ use std::sync::mpsc;
 use std::thread;
 
 /**
- * <p> @project_name: OANotifier <p/>
- * <p> @user_name: luhanzhen <p/>
- * <p> @date: 2023/5/21 <p/>
- * <p> @time: 13:40 <p/>
- * <p> @this_file_name:html <p/>
+ * <p> @project_name: OANotifier </p>
+ * <p> @user_name: luhanzhen </p>
+ * <p> @date: 2023/5/21 </p>
+ * <p> @time: 13:40 </p>
+ * <p> @this_file_name:html </p>
  */
 
 pub fn get_content(url: &str) -> Option<(Vec<String>, Vec<String>)> {

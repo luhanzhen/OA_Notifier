@@ -15,11 +15,11 @@ use std::sync::mpsc::Sender;
 use webbrowser;
 
 /**
- * <p> @project_name: OANotifier <p/>
- * <p> @user_name: luhanzhen <p/>
- * <p>@date: 2023/5/21<p/>
- * <p>@time: 13:34<p/>
- * <p>@this_file_name:ui<p/>
+ * <p> @project_name: OANotifier </p>
+ * <p> @user_name: luhanzhen </p>
+ * <p>@date: 2023/5/21</p>
+ * <p>@time: 13:34</p>
+ * <p>@this_file_name:ui</p>
  */
 
 pub fn check_update(x: i32, y: i32) {
