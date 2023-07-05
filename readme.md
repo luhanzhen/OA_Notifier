@@ -8,13 +8,8 @@
 [![JLUOA](https://img.shields.io/badge/JLU_OA-green)](https://oa.jlu.edu.cn/defaultroot/login.jsp?access=oa)
 
 
->每十分钟读取[OA](https://oa.jlu.edu.cn/defaultroot/login.jsp?access=oa)上的前若干页。
->虽然是爬虫，但是不会给OA服务器带来巨大的压力。
->注意一定要在能访问OA的环境下使用。
 
 
-# 作者邮箱 📧
->zhenlh20@mails.jlu.edu.cn
 
 # 注意 ❗
 
@@ -36,8 +31,10 @@
 * 个人用户享有使用权，作者不对使用者造成的后果负责。
 * 本软件仅供个人使用，不可用于商业盈利目的或者非法目的。
 * 请主动遵守国家法律法规和学校的有关规定，非法或者违规行为造成的法律责任和后果自负。
+* 注意一定要在能访问OA的环境下使用。
 
 
+ 
 
 
 ## Visitor count ⚡
