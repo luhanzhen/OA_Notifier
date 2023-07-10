@@ -580,6 +580,7 @@ pub fn draw_data(
         } else {
             draw::set_draw_color(Color::from_hex(0x6D6875));
         }
+        draw::set_font(enums::Font::TimesBold, 14);
     } else if col == 1 {
         draw::set_draw_color(Color::from_rgb(39, 118, 197));
     } else {
